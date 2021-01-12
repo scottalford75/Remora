@@ -745,56 +745,6 @@ void update_freq(void *arg, long period)
 
 }
 
-void spi_read_raw()
-{
-	int i, j;
-
-	// Data header
-	txData.header = PRU_READ;
-	
-	// Transfer to and from the PRU
-	spi_transfer();
-
-	switch (rxData.header)		// only process valid SPI payloads. This rejects bad payloads
-	{
-		case PRU_DATA:
-			// we have received a GOOD payload from the PRU
-			*(data->SPIstatus) = 1;
-
-			for (i = 0; i < JOINTS; i++)
-			{
-				// the PRU DDS accumulator uses 32 bit counter, this code converts that counter into 64 bits */
-				accum_diff = rxData.jointFeedback[i] - old_count[i];
-				old_count[i] = rxData.jointFeedback[i];
-				accum[i] += accum_diff;
-			}
-
-			// Feedback
-			for (i = 0; i < VARIABLES; i++)
-			{
-				*(data->processVariable[i]) = rxData.processVariable[i]; 
-			}
-
-			// Inputs
-			for (i = 0; i < DIGITAL_INPUTS; i++)
-			{
-				if ((rxData.inputs & (1 << i)) != 0)
-				{
-					*(data->inputs[i]) = 1; 		// input is high
-				}
-				else
-				{
-					*(data->inputs[i]) = 0;			// input is low
-				}
-			}
-			break;
-
-		default:
-			// we have received a BAD payload from the PRU
-			*(data->SPIstatus) = 0;
-			break;
-	}
-}
 
 void spi_read()
 {
