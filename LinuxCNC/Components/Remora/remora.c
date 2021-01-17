@@ -325,14 +325,14 @@ This is throwing errors from axis.py for some reason...
 	for (n = 0; n < DIGITAL_OUTPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_IN, &(data->outputs[n]),
 				comp_id, "%s.output.%01d", prefix, n);
-		if (retval != 0) { return retval; }
+		if (retval != 0) goto error;
 		*(data->outputs[n])=0;
 	}
 
 	for (n = 0; n < DIGITAL_INPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n]),
 				comp_id, "%s.input.%01d", prefix, n);
-		if (retval != 0) { return retval; }
+		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
 	}
 
@@ -863,7 +863,7 @@ void spi_write()
 	// Outputs
 	for (i = 0; i < DIGITAL_OUTPUTS; i++)
 	{
-		if (*(data->outputs[i]) = 1)
+		if (*(data->outputs[i]) == 1)
 		{
 			txData.outputs |= (1 << i);		// output is high
 		}

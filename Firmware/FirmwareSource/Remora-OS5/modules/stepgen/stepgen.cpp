@@ -26,9 +26,6 @@ Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::s
 	this->isForward = false;
 }
 
-//Stepgen::~Stepgen()
-//{
-//}
 
 void Stepgen::update()
 {
@@ -46,7 +43,7 @@ void Stepgen::makePulses()
 	int32_t stepNow = 0;
 
 	this->isEnabled = ((*(this->ptrJointEnable) & this->mask) != 0);
-	//this->isEnabled = true;
+
 	if (this->isEnabled == true)  												// this Step generator is enables so make the pulses
 	{
 		this->enablePin->set(false);                                			// Enable the driver - CHANGE THIS TO MAKE THE OUTPUT VALUE CONFIGURABLE???
