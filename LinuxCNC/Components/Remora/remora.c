@@ -244,7 +244,7 @@ int rtapi_app_main(void)
 
 	bcm2835_gpio_fsel(reset_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
 	retval = hal_pin_bit_newf(HAL_IN, &(data->PRUreset),
-			comp_id, "%s.PRUreset", prefix);
+			comp_id, "%s.PRU-reset", prefix);
 	if (retval != 0) goto error;
 
 
