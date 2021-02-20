@@ -1,0 +1,13 @@
+{
+    "flags": [
+        "--cpu=Cortex-M3",
+        "--ide=mbed"
+    ],
+    "macros": [],
+    "symbols": [
+        "ARM_MATH_CM3",
+        "__CMSIS_RTOS",
+        "__CORTEX_M3",
+        "__MBED_CMSIS_RTOS_CM"
+    ]
+}

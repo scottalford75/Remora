@@ -1,0 +1,3 @@
+BUILD\LPC1768\ARMC6\mbed-os\targets\TARGET_NXP\TARGET_LPC176X\device\TOOLCHAIN_ARM_STD\startup_LPC17xx.o: \
+  mbed-os\targets\TARGET_NXP\TARGET_LPC176X\device\TOOLCHAIN_ARM_STD\startup_LPC17xx.S \
+  BUILD\LPC1768\ARMC6\mbed_config.h
