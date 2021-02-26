@@ -1,5 +1,5 @@
 
-# load the real-time components
+# load the realtime components
 
 	loadrt [KINS]KINEMATICS
 	loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
@@ -20,7 +20,7 @@
 	addf motion-controller servo-thread
 	addf remora.update-freq servo-thread
 	addf remora.write servo-thread
-
+ppt
 
 # Joint 0 setup
 
