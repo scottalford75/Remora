@@ -19,4 +19,4 @@ net ext0-PV 	=> pyvcp.ext0-PV
 net eoffset-active 	<= axis.z.eoffset 		=> pyvcp.z-offset-f
 net z-offset-request <= axis.z.eoffset-request  	=> pyvcp.z-offset-request-f
 net z-enable 		<= pyvcp.z-enable 		=> compensation.enable-in
-net PRUreset 		<= pyvcp.PRUreset 		=> spiPRU.PRUreset
+net PRUreset 		<= pyvcp.PRUreset 		=> remora.PRU-reset
