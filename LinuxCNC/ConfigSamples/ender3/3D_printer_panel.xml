@@ -107,41 +107,6 @@
 <label>
 <text>"   "</text>
 </label>
-<hbox>
-	<label>	
-		<text>" Compensation"</text>
-		<fg>"blue"</fg>
-		<anchor>"w"</anchor>
-	</label>
-	<checkbutton>
-		<anchor>"w"</anchor>
-		<halpin>"z-enable"</halpin>
-		<text>"Enable"</text>
-		<padx>1</padx>
-		<initval>0</initval>
-	</checkbutton>
-</hbox>
-<hbox>
-    <label>
-        <text>" Z offset: "</text>
-    </label>
-    <number> 
-    	<halpin>"z-offset-f"</halpin>
-    	<format>"+10.4f"</format>
-    </number>
-</hbox>
-<hbox>
-    <label>
-        <text>" Z offset req: "</text>
-    </label>
-    <number> 
-    	<halpin>"z-offset-request-f"</halpin>
-    	<format>"+10.4f"</format>
-    </number>
-</hbox>
-<label>
-<text>"   "</text>
-</label>
        <button>
          <halpin>"PRUreset"</halpin>
          <bd>3</bd>
