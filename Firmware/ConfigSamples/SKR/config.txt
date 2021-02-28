@@ -1,0 +1,133 @@
+{
+	"Board": "BIGTREETECH SKR v1.3 & v1.4",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"1.31"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"2.2",
+		"Direction Pin": 	"2.6",
+		"Enable Pin": 		"2.1"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"0.19",
+		"Direction Pin": 	"0.20",
+		"Enable Pin": 		"2.08"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"0.22",
+		"Direction Pin": 	"2.11",
+		"Enable Pin": 		"0.21"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E0 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"2.13",
+		"Direction Pin": 	"0.11",
+		"Enable Pin": 		"2.12"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Extruder tenperature sensor",
+		"PV[i]": 			0,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"0.23",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Base",
+	"Type": "RCServo",
+		"Comment": 			"RC servo for probe",
+		"SP[i]": 			3,
+		"Servo Pin": 		"2.0"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Encoder",
+		"Comment":			"Encoder",
+		"PV[i]":			2,
+		"ChA Pin":			"1.20",
+		"ChB Pin":			"1.22"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X min",
+		"Pin":				"1.29",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X max",
+		"Pin":				"1.28",
+		"Mode":				"Input",
+		"Data Bit":			1
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y min",
+		"Pin":				"1.27",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y max",
+		"Pin":				"1.26",
+		"Mode":				"Input",
+		"Data Bit":			3
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z min",
+		"Pin":				"1.25",
+		"Mode":				"Input",
+		"Data Bit":			4
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z max",
+		"Pin":				"1.24",
+		"Mode":				"Input",
+		"Data Bit":			5
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Switch",
+		"Comment":			"Extruder fan switch",
+		"Pin":				"0.0",
+		"Mode":				"On",
+		"PV[i]":			0,
+		"SP":				25.5
+	}
+	]
+}
