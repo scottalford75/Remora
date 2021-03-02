@@ -7,7 +7,7 @@
 #include "interrupt.h"
 #include "timerInterrupt.h"
 #include "timer.h"
-#include "PRUthread.h"
+#include "pruThread.h"
 
 
 #define SBIT_TIMER0  1
