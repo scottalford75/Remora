@@ -15,6 +15,12 @@
             "platform.stdio-baud-rate": 115200,
             "target.features_add": ["STORAGE"],
             "target.components_add" : ["SD"]
+        },
+        "LPC1769": {
+            "target.mbed_app_start": "0x4000",
+            "platform.stdio-baud-rate": 115200,
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
         }
     }
 }
