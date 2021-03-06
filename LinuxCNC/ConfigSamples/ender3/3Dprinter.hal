@@ -55,7 +55,7 @@
 
 # Extruder 0 PID configuration
 
-	net spiPRUstatus 	=> PID-ext0.auto
+	net remora-status 	=> PID-ext0.auto
 	net ext0-SP 		=> PID-ext0.SP
 	net ext0-PV 		=> PID-ext0.PV
 	net ext0-heater-SP 	=> PID-ext0.CV

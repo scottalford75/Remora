@@ -1,4 +1,4 @@
-{
+
 	"Board": "MKS SBASE v1.3",
 	"Modules":[
 	{
@@ -173,7 +173,7 @@
 	{
 	"Thread": "Servo",
 	"Type": "PWM",
-		"Comment": 			"Ext0 part cooling fan PWM",
+		"Comment": 			"Ext0 part cooling fan PWM on FAN",
 		"SP[i]": 			2,
 		"PWM Max":			128,
 		"PWM Pin": 			"2.4"
@@ -188,8 +188,8 @@
 	{
 	"Thread": "Servo",
 	"Type": "Switch",
-		"Comment":			"Extruder fan switch",
-		"Pin":				"1.22",
+		"Comment":			"Extruder fan switch on E2",
+		"Pin":				"2.6",
 		"Mode":				"On",
 		"PV[i]":			1,
 		"SP":				35.0
