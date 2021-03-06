@@ -3,7 +3,7 @@
 #define REMORA_H
 
 
-#define JOINTS				5  			// Number of joints - set this the same as Remora firmware code!!!. Max 8 joints
+#define JOINTS				8  			// Number of joints - set this the same as Remora firmware code!!!. Max 8 joints
 #define VARIABLES          	6 			// Number of command values - set this the same Remora firmware code!!!
 #define DIGITAL_OUTPUTS		8
 #define DIGITAL_INPUTS		8
