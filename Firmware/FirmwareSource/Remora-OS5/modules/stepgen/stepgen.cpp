@@ -19,7 +19,8 @@ Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::s
 	this->enablePin = new Pin(this->enable, OUTPUT);			// create Pins
 	this->stepPin = new Pin(this->step, OUTPUT);
 	this->directionPin = new Pin(this->direction, OUTPUT);
-	this->DDSaccumulator = 1 << (this->stepBit-1);				// accumulator gets a half step offset, so it will step half way between integer positions, not at the integer positions
+	//this->DDSaccumulator = 1 << (this->stepBit-1);				// accumulator gets a half step offset, so it will step half way between integer positions, not at the integer positions
+    this->DDSaccumulator = 0;
 	this->frequencyScale = (float)(1 << this->stepBit) / (float)threadFreq;
 	this->mask = 1 << this->jointNumber;
 	this->isEnabled = false;

@@ -551,7 +551,7 @@ void update_freq(void *arg, long period)
 	       est_out, est_cmd, est_err, desired_freq;
 
 
-    // calc constants related to the period of this function (SERVO_THREAD)
+    // calc constants related to the period of this function (LinuxCNC SERVO_THREAD)
     // only recalc constants if period changes
     if (period != old_dtns) 			// Note!! period = LinuxCNC SERVO_PERIOD
 	{
@@ -641,11 +641,15 @@ void update_freq(void *arg, long period)
 
 
 			// convert from fixed point to double, after subtracting the one-half step offset
-			curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK);
+			///curr_pos = (double)(accum[i]) * (1.0 / STEP_MASK);
+			//curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK);
 			//*(data->pos_fb[i]) = (float)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK) / data->pos_scale[i];
-			*(data->pos_fb[i]) = (float)(curr_pos / data->pos_scale[i]);
+			///*(data->pos_fb[i]) = (float)(curr_pos / data->pos_scale[i]);
 			//*(data->pos_fb[i]) = (float)(curr_pos * data->scale_recip[i]);
-
+			//*(data->pos_fb[i]) = (double)(accum[i]-STEP_OFFSET) * data->scale_recip[i];
+			
+			curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK)+STEP_OFFSET*(1/STEP_MASK);
+			*(data->pos_fb[i]) = (float)(curr_pos / data->pos_scale[i]);
 
 			/* get velocity in counts/sec */
 			curr_vel = data->freq[i];
@@ -710,7 +714,7 @@ void update_freq(void *arg, long period)
 			/* end of position mode */
 			
 			// Stop hunting - for some reason steppers shudder by 1 step when at position. Due to DDS offset?
-			if (fabs(*data->pos_cmd[i]-*(data->pos_fb[i])) < 0.01) new_vel = 0.0;
+			//if (fabs(*data->pos_cmd[i]-*(data->pos_fb[i])) < 0.01) new_vel = 0.0;
 		
 		} else {
 
