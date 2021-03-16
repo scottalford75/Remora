@@ -65,7 +65,6 @@ typedef struct {
 	hal_float_t 	*pos_cmd[JOINTS];			// pin: position command (position units)
 	hal_float_t 	*vel_cmd[JOINTS];			// pin: velocity command (position units/sec)
 	hal_float_t 	*pos_fb[JOINTS];			// pin: position feedback (position units)
-	hal_s32_t		*count[JOINTS];				// pin: psition feedback (raw counts)
 	hal_float_t 	pos_scale[JOINTS];			// param: steps per position unit
 	float 			freq[JOINTS];				// param: frequency command sent to PRU
 	hal_float_t 	*freq_cmd[JOINTS];			// pin: frequency command monitoring, available in LinuxCNC
@@ -75,13 +74,6 @@ typedef struct {
 	float 			old_pos_cmd_raw[JOINTS];		// previous position command (counts)
 	float 			old_scale[JOINTS];			// stored scale value
 	float 			scale_recip[JOINTS];		// reciprocal value used for scaling
-	float			prev_cmd[JOINTS];
-	float			prev_fb[JOINTS];
-	float			prev_error[JOINTS];
-	float			cmd_d[JOINTS];					// command derivative
-	float			commandv[JOINTS];				// commanded derivative value
-	float			feedbackv[JOINTS];
-	float			error_d[JOINTS];
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
@@ -309,11 +301,6 @@ This is throwing errors from axis.py for some reason...
 		        comp_id, "%s.joint.%01d.scale", prefix, n);
 		if (retval < 0) goto error;
 		data->pos_scale[n] = 1.0;
-
-		retval = hal_pin_s32_newf(HAL_OUT, &(data->count[n]),
-		        comp_id, "%s.joint.%01d.counts", prefix, n);
-		if (retval < 0) goto error;
-		*(data->count[n]) = 0;
 
 		retval = hal_param_float_newf(HAL_RW, &(data->maxaccel[n]),
 		        comp_id, "%s.joint.%01d.maxaccel", prefix, n);
@@ -559,15 +546,10 @@ void update_freq(void *arg, long period)
 {
 	int i;
 	data_t *data = (data_t *)arg;
-	double max_ac, vel_cmd, dv, new_vel, max_freq, desired_freq;
-		   
-	double tmp1, tmp2, command, feedback;
-	double periodfp, periodrecip;
-	float pgain, ff1gain, deadband;
+	double max_ac, vel_cmd, dv, new_vel, max_freq, match_ac,
+	       dp, pos_cmd, curr_pos, curr_vel, match_accl, match_time, avg_v,
+	       est_out, est_cmd, est_err, desired_freq;
 
-	// precalculate timing constants
-    periodfp = period * 0.000000001;
-    periodrecip = 1.0 / periodfp;
 
     // calc constants related to the period of this function (LinuxCNC SERVO_THREAD)
     // only recalc constants if period changes
@@ -593,6 +575,16 @@ void update_freq(void *arg, long period)
 			data->scale_recip[i] = (1.0 / STEP_MASK) / data->pos_scale[i];
 		}
 
+
+		// test for disabled stepgen
+		if (*data->stepperEnable == 0) {
+			// disabled: keep updating old_pos_cmd (if in pos ctrl mode)
+			data->old_pos_cmd[i] = *data->pos_cmd[i] * data->pos_scale[i];
+			// set velocity to zero
+			data->freq[i] = 0; //CHECK THAT WE DO NOT OVER WRITE THIS LATER!! This probably needs a else statement
+		}
+	
+
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
 		max_freq = PRU_BASEFREQ/(2.0); 	
@@ -613,7 +605,7 @@ void update_freq(void *arg, long period)
 			max_freq = data->maxvel[i] * fabs(data->pos_scale[i]);
 			}
 		}
-		
+
 		/* set internal accel limit to its absolute max, which is
 		zero to full speed in one thread period */
 		max_ac = max_freq * recip_dt;
@@ -641,50 +633,88 @@ void update_freq(void *arg, long period)
 
 			/* POSITION CONTROL MODE */
 
-			// use "PID" control with only pgain, ff1gain and deadband
-			pgain = 0.3 / periodfp;
-			ff1gain = 1.0;
-			deadband = 1 / data->pos_scale[i];
+			/* calculate position command in counts */
+			pos_cmd = *(data->pos_cmd[i]) * data->pos_scale[i];
+			/* calculate velocity command in counts/sec */
+			vel_cmd = (pos_cmd - data->old_pos_cmd[i]) * recip_dt;
+			data->old_pos_cmd[i] = pos_cmd;
 
-			// read the command and feedback
-			command = *(data->pos_cmd[i]);
-			feedback = *(data->pos_fb[i]);
+
+			// convert from fixed point to double, after subtracting the one-half step offset
+			///curr_pos = (double)(accum[i]) * (1.0 / STEP_MASK);
+			//curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK);
+			//*(data->pos_fb[i]) = (float)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK) / data->pos_scale[i];
+			///*(data->pos_fb[i]) = (float)(curr_pos / data->pos_scale[i]);
+			//*(data->pos_fb[i]) = (float)(curr_pos * data->scale_recip[i]);
+			//*(data->pos_fb[i]) = (double)(accum[i]-STEP_OFFSET) * data->scale_recip[i];
 			
-			// calcuate the error
-			tmp1 = command - feedback;
-			
-			// apply the deadband
-			if (tmp1 > deadband)
-			{
-				tmp1 -= deadband;
+			curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK)+STEP_OFFSET*(1/STEP_MASK);
+			*(data->pos_fb[i]) = (float)(curr_pos / data->pos_scale[i]);
+
+			/* get velocity in counts/sec */
+			curr_vel = data->freq[i];
+			/* At this point we have good values for pos_cmd, curr_pos,
+			   vel_cmd, curr_vel, max_freq and max_ac, all in counts,
+			   counts/sec, or counts/sec^2.  Now we just have to do
+			   something useful with them. */
+
+			/* determine which way we need to ramp to match velocity */
+			if (vel_cmd > curr_vel) {
+				match_ac = max_ac;
+			} else {
+				match_ac = -max_ac;
 			}
-			else if (tmp1 < -deadband)
-			{
-				tmp1 += deadband;
+
+			/* determine how long the match would take */
+			match_time = (vel_cmd - curr_vel) / match_ac;
+			/* calc output position at the end of the match */
+			avg_v = (vel_cmd + curr_vel) * 0.5;
+			est_out = curr_pos + avg_v * match_time;
+			/* calculate the expected command position at that time */
+			est_cmd = pos_cmd + vel_cmd * (match_time - 1.5 * dt);
+			/* calculate error at that time */
+			est_err = est_out - est_cmd;
+
+			if (match_time < dt) {
+				/* we can match velocity in one period */
+				if (fabs(est_err) < 0.0001) {
+					/* after match the position error will be acceptable */
+					/* so we just do the velocity match */
+					new_vel = vel_cmd;
+				} else {
+					/* try to correct position error */
+					new_vel = vel_cmd - 0.5 * est_err * recip_dt;
+					/* apply accel limits */
+					if (new_vel > (curr_vel + max_ac * dt)) {
+						new_vel = curr_vel + max_ac * dt;
+					} else if (new_vel < (curr_vel - max_ac * dt)) {
+						new_vel = curr_vel - max_ac * dt;
+					}
+				}
+			} else {
+				/* calculate change in final position if we ramp in the
+				opposite direction for one period */
+				dv = -2.0 * match_ac * dt;
+				dp = dv * match_time;
+				/* decide which way to ramp */
+				if (fabs(est_err + dp * 2.0) < fabs(est_err)) {
+					match_ac = -match_ac;
+				}
+				/* and do it */
+				new_vel = curr_vel + match_ac * dt;
 			}
-			else
-			{
-				tmp1 = 0;
+
+
+			/* apply frequency limit */
+			if (new_vel > max_freq) {
+				new_vel = max_freq;
+			} else if (new_vel < -max_freq) {
+				new_vel = -max_freq;
 			}
+			/* end of position mode */
 			
-			// calcuate command and derivatives
-			data->commandv[i] = (command - data->prev_cmd[i]) * periodrecip;
-			data->feedbackv[i] = (feedback - data->prev_fb[i]) * periodrecip;
-			
-			// and calculate the derivative term as a difference of derivatives
-			data->error_d[i] = data->commandv[i] - data->feedbackv[i];
-			
-			// save old values
-			tmp2 = data->cmd_d[i];
-			data->cmd_d[i] = data->commandv[i];
-			data->prev_cmd[i] = command;
-			data->prev_fb[i] = feedback;
-			
-			// calculate the output value
-			tmp1 = pgain * tmp1 + data->cmd_d[i] * ff1gain;
-			
-			new_vel = tmp1 * data->pos_scale[i];
-			
+			// Stop hunting - for some reason steppers shudder by 1 step when at position. Due to DDS offset?
+			//if (fabs(*data->pos_cmd[i]-*(data->pos_fb[i])) < 0.01) new_vel = 0.0;
 		
 		} else {
 
@@ -713,14 +743,7 @@ void update_freq(void *arg, long period)
 		}
 
 		data->freq[i] = new_vel;					// to be sent to the PRU
-		
-		// test for disabled stepgen
-		if (*data->stepperEnable == 0) {
-			// set velocity to zero
-			data->freq[i] = 0; 
-		}
-		
-		*(data->freq_cmd[i]) = data->freq[i];	// feedback to LinuxCNC
+		*(data->freq_cmd[i]) = (float)(new_vel);	// feedback to LinuxCNC
 
 	}
 
@@ -729,8 +752,7 @@ void update_freq(void *arg, long period)
 
 void spi_read()
 {
-	int i;
-	double curr_pos;
+	int i, j;
 
 	// Data header
 	txData.header = PRU_READ;
@@ -766,12 +788,8 @@ void spi_read()
 						accum_diff = rxData.jointFeedback[i] - old_count[i];
 						old_count[i] = rxData.jointFeedback[i];
 						accum[i] += accum_diff;
-
-						*(data->count[i]) = accum[i] >> STEPBIT;
-
-						data->scale_recip[i] = (1.0 / STEP_MASK) / data->pos_scale[i];
-						curr_pos = (double)(accum[i]-STEP_OFFSET) * (1.0 / STEP_MASK);
-						*(data->pos_fb[i]) = (float)((curr_pos+0.5) / data->pos_scale[i]);
+						
+						//*(data->pos_fb[i]) = (float)(accum[i]-STEP_OFFSET) * data->scale_recip[i]; //-STEP_OFFSET
 					}
 
 					// Feedback
