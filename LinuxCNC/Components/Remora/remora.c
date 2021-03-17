@@ -71,17 +71,15 @@ typedef struct {
 	hal_float_t 	*freq_cmd[JOINTS];			// pin: frequency command monitoring, available in LinuxCNC
 	hal_float_t 	maxvel[JOINTS];				// param: max velocity, (pos units/sec)
 	hal_float_t 	maxaccel[JOINTS];			// param: max accel (pos units/sec^2)
+	hal_float_t		*pgain[JOINTS];
+	hal_float_t		*ff1gain[JOINTS];
+	hal_float_t		*deadband[JOINTS];
 	float 			old_pos_cmd[JOINTS];		// previous position command (counts)
 	float 			old_pos_cmd_raw[JOINTS];		// previous position command (counts)
 	float 			old_scale[JOINTS];			// stored scale value
 	float 			scale_recip[JOINTS];		// reciprocal value used for scaling
 	float			prev_cmd[JOINTS];
-	float			prev_fb[JOINTS];
-	float			prev_error[JOINTS];
 	float			cmd_d[JOINTS];					// command derivative
-	float			commandv[JOINTS];				// commanded derivative value
-	float			feedbackv[JOINTS];
-	float			error_d[JOINTS];
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
@@ -314,6 +312,21 @@ This is throwing errors from axis.py for some reason...
 		        comp_id, "%s.joint.%01d.counts", prefix, n);
 		if (retval < 0) goto error;
 		*(data->count[n]) = 0;
+		
+		retval = hal_pin_float_newf(HAL_IN, &(data->pgain[n]),
+				comp_id, "%s.joint.%01d.pgain", prefix, n);
+		if (retval < 0) goto error;
+		*(data->pgain[n]) = 0.0;
+		
+		retval = hal_pin_float_newf(HAL_IN, &(data->ff1gain[n]),
+				comp_id, "%s.joint.%01d.ff1gain", prefix, n);
+		if (retval < 0) goto error;
+		*(data->ff1gain[n]) = 0.0;
+		
+		retval = hal_pin_float_newf(HAL_IN, &(data->deadband[n]),
+				comp_id, "%s.joint.%01d.deadband", prefix, n);
+		if (retval < 0) goto error;
+		*(data->deadband[n]) = 0.0;
 
 		retval = hal_param_float_newf(HAL_RW, &(data->maxaccel[n]),
 		        comp_id, "%s.joint.%01d.maxaccel", prefix, n);
@@ -561,7 +574,7 @@ void update_freq(void *arg, long period)
 	data_t *data = (data_t *)arg;
 	double max_ac, vel_cmd, dv, new_vel, max_freq, desired_freq;
 		   
-	double tmp1, tmp2, command, feedback;
+	double error, command, feedback;
 	double periodfp, periodrecip;
 	float pgain, ff1gain, deadband;
 
@@ -599,37 +612,51 @@ void update_freq(void *arg, long period)
 
 
 		// check for user specified frequency limit parameter
-		if (data->maxvel[i] <= 0.0) {
+		if (data->maxvel[i] <= 0.0)
+		{
 			// set to zero if negative
 			data->maxvel[i] = 0.0;
-		} else {
+		}
+		else
+		{
 			// parameter is non-zero, compare to max_freq
 			desired_freq = data->maxvel[i] * fabs(data->pos_scale[i]);
-			if (desired_freq > max_freq) {
+
+			if (desired_freq > max_freq)
+			{
 				// parameter is too high, limit it
 				data->maxvel[i] = max_freq / fabs(data->pos_scale[i]);
-			} else {
-			// lower max_freq to match parameter
-			max_freq = data->maxvel[i] * fabs(data->pos_scale[i]);
+			}
+			else
+			{
+				// lower max_freq to match parameter
+				max_freq = data->maxvel[i] * fabs(data->pos_scale[i]);
 			}
 		}
 		
 		/* set internal accel limit to its absolute max, which is
 		zero to full speed in one thread period */
 		max_ac = max_freq * recip_dt;
-		/* check for user specified accel limit parameter */
-		if (data->maxaccel[i] <= 0.0) {
-			/* set to zero if negative */
+		
+		// check for user specified accel limit parameter
+		if (data->maxaccel[i] <= 0.0)
+		{
+			// set to zero if negative
 			data->maxaccel[i] = 0.0;
-		} else {
-			/* parameter is non-zero, compare to max_ac */
-				if ((data->maxaccel[i] * fabs(data->pos_scale[i])) > max_ac) {
-				/* parameter is too high, lower it */
+		}
+		else 
+		{
+			// parameter is non-zero, compare to max_ac
+			if ((data->maxaccel[i] * fabs(data->pos_scale[i])) > max_ac)
+			{
+				// parameter is too high, lower it
 				data->maxaccel[i] = max_ac / fabs(data->pos_scale[i]);
-				} else {
-				/* lower limit to match parameter */
+			}
+			else
+			{
+				// lower limit to match parameter
 				max_ac = data->maxaccel[i] * fabs(data->pos_scale[i]);
-				}
+			}
 		}
 
 		/* at this point, all scaling, limits, and other parameter
@@ -641,87 +668,108 @@ void update_freq(void *arg, long period)
 
 			/* POSITION CONTROL MODE */
 
-			// use "PID" control with only pgain, ff1gain and deadband
-			pgain = 0.3 / periodfp;
-			ff1gain = 1.0;
-			deadband = 1 / data->pos_scale[i];
+			// use "PID" control with only Proportional (pgain, ff1gain and deadband)
+			
+			if (*(data->pgain[i]) != 0)
+			{
+				pgain = *(data->pgain[i]);
+			}
+			else
+			{
+				pgain = 0.3 / periodfp;
+			}
+			
+			if (*(data->ff1gain[i]) != 0)
+			{
+				ff1gain = *(data->ff1gain[i]);
+			}
+			else
+			{
+				ff1gain = 1.0;
+			}
+			
+			if (*(data->deadband[i]) != 0)
+			{
+				deadband = *(data->deadband[i]);
+			}
+			else
+			{
+				deadband = 1 / data->pos_scale[i];
+			}	
 
 			// read the command and feedback
 			command = *(data->pos_cmd[i]);
 			feedback = *(data->pos_fb[i]);
 			
 			// calcuate the error
-			tmp1 = command - feedback;
+			error = command - feedback;
 			
 			// apply the deadband
-			if (tmp1 > deadband)
+			if (error > deadband)
 			{
-				tmp1 -= deadband;
+				error -= deadband;
 			}
-			else if (tmp1 < -deadband)
+			else if (error < -deadband)
 			{
-				tmp1 += deadband;
+				error += deadband;
 			}
 			else
 			{
-				tmp1 = 0;
+				error = 0;
 			}
 			
 			// calcuate command and derivatives
-			data->commandv[i] = (command - data->prev_cmd[i]) * periodrecip;
-			data->feedbackv[i] = (feedback - data->prev_fb[i]) * periodrecip;
-			
-			// and calculate the derivative term as a difference of derivatives
-			data->error_d[i] = data->commandv[i] - data->feedbackv[i];
+			data->cmd_d[i] = (command - data->prev_cmd[i]) * periodrecip;
 			
 			// save old values
-			tmp2 = data->cmd_d[i];
-			data->cmd_d[i] = data->commandv[i];
 			data->prev_cmd[i] = command;
-			data->prev_fb[i] = feedback;
-			
+				
 			// calculate the output value
-			tmp1 = pgain * tmp1 + data->cmd_d[i] * ff1gain;
-			
-			new_vel = tmp1 * data->pos_scale[i];
-			
+			vel_cmd = (pgain * error + data->cmd_d[i] * ff1gain) * data->pos_scale[i];
 		
 		} else {
 
 			/* VELOCITY CONTROL MODE */
 			
-			/* velocity mode is simpler */
-			/* calculate velocity command in counts/sec */
+			// calculate velocity command in counts/sec
 			vel_cmd = *(data->vel_cmd[i]) * data->pos_scale[i];
-			/* apply frequency limit */
-			if (vel_cmd > max_freq) {
+		}	
+			
+		// apply frequency limit
+		if (vel_cmd > max_freq) 
+		{
 			vel_cmd = max_freq;
-			} else if (vel_cmd < -max_freq) {
+		} 
+		else if (vel_cmd < -max_freq) 
+		{
 			vel_cmd = -max_freq;
-			}
-			/* calc max change in frequency in one period */
-			dv = max_ac * dt;
-			/* apply accel limit */
-			if ( vel_cmd > (data->freq[i] + dv) ) {
-			new_vel = data->freq[i] + dv;
-			} else if ( vel_cmd < (data->freq[i] - dv) ) {
-			new_vel = data->freq[i] - dv;
-			} else {
-			new_vel = vel_cmd;
-			}
-			/* end of velocity mode */
 		}
-
-		data->freq[i] = new_vel;					// to be sent to the PRU
+		
+		// calc max change in frequency in one period
+		dv = max_ac * dt;
+		
+		// apply accel limit
+		if ( vel_cmd > (data->freq[i] + dv) )
+		{
+			new_vel = data->freq[i] + dv;
+		} 
+		else if ( vel_cmd < (data->freq[i] - dv) ) 
+		{
+			new_vel = data->freq[i] - dv;
+		}
+		else
+		{
+			new_vel = vel_cmd;
+		}
 		
 		// test for disabled stepgen
 		if (*data->stepperEnable == 0) {
 			// set velocity to zero
-			data->freq[i] = 0; 
+			new_vel = 0; 
 		}
 		
+		data->freq[i] = new_vel;				// to be sent to the PRU
 		*(data->freq_cmd[i]) = data->freq[i];	// feedback to LinuxCNC
-
 	}
 
 }
