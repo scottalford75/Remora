@@ -13,7 +13,7 @@
 	addf PID-ext0.compute servo-thread
 
 
-# configure z-compensation: note python version here.
+# configure z-compensation: note python version here. For Archlinux use "python2"
 
 	loadusr -Wn compensation python compensation.py probe-results.txt cubic
 
@@ -46,23 +46,23 @@
 
 # remora command outputs
 
-	net bed-heater-SP 		=> remora.SP.0
+	net bed-heater-SP 	=> remora.SP.0
 	net ext0-heater-SP  	=> remora.SP.1
 	net ext0-cooling-SP 	=> remora.SP.2
-	net BLtouch-SP 			=> remora.SP.3
+	net BLtouch-SP 		=> remora.SP.3
 
 
 # remora command feedbacks
 
-	net bed-PV 			=> remora.PV.0
+	net bed-PV 		=> remora.PV.0
 	net ext0-PV 		=> remora.PV.1
 
 
 ## Bed PID configuration
 
 	net remora-status 	=> PID-bed.auto
-	net bed-SP 			=> PID-bed.SP
-	net bed-PV 			=> PID-bed.PV
+	net bed-SP 		=> PID-bed.SP
+	net bed-PV 		=> PID-bed.PV
 	net bed-heater-SP 	=> PID-bed.CV
 
 	setp PID-bed.pOnM 	[BED]PID_PONM
@@ -78,7 +78,7 @@
 
 # Extruder 0 PID configuration
 
-	net spiPRUstatus 	=> PID-ext0.auto
+	net remora-status 	=> PID-ext0.auto
 	net ext0-SP 		=> PID-ext0.SP
 	net ext0-PV 		=> PID-ext0.PV
 	net ext0-heater-SP 	=> PID-ext0.CV
