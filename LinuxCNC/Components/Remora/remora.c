@@ -327,7 +327,7 @@ This is throwing errors from axis.py for some reason...
 				comp_id, "%s.joint.%01d.deadband", prefix, n);
 		if (retval < 0) goto error;
 		*(data->deadband[n]) = 0.0;
-
+		
 		retval = hal_param_float_newf(HAL_RW, &(data->maxaccel[n]),
 		        comp_id, "%s.joint.%01d.maxaccel", prefix, n);
 		if (retval < 0) goto error;
@@ -676,7 +676,7 @@ void update_freq(void *arg, long period)
 			}
 			else
 			{
-				pgain = 0.3 / periodfp;
+				pgain = 1.0;
 			}
 			
 			if (*(data->ff1gain[i]) != 0)
@@ -725,15 +725,17 @@ void update_freq(void *arg, long period)
 			data->prev_cmd[i] = command;
 				
 			// calculate the output value
-			vel_cmd = (pgain * error + data->cmd_d[i] * ff1gain) * data->pos_scale[i];
+			vel_cmd = pgain * error + data->cmd_d[i] * ff1gain;
 		
 		} else {
 
 			/* VELOCITY CONTROL MODE */
 			
 			// calculate velocity command in counts/sec
-			vel_cmd = *(data->vel_cmd[i]) * data->pos_scale[i];
+			vel_cmd = *(data->vel_cmd[i]);
 		}	
+			
+		vel_cmd = vel_cmd * data->pos_scale[i];
 			
 		// apply frequency limit
 		if (vel_cmd > max_freq) 
