@@ -15,7 +15,7 @@ Temperature::Temperature(volatile float &ptrFeedback, int32_t threadFreq, int32_
 {
   if (this->sensorType == "Thermistor")
   {
-    cout << "Creating Thermistor Tempearture measurement @ pin " << this->pinSensor << endl;
+    cout <<"Creating Thermistor Tempearture measurement @ pin " << this->pinSensor << endl;
     this->Sensor = new Thermistor(this->pinSensor, this->beta, this->r0, this->t0);
   }
   // TODO: Add more sensor types as needed

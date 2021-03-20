@@ -3,6 +3,7 @@ loadrt [KINS]KINEMATICS
 loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
 
 # test machine is a corexy, load translation module
+#loadrt corexy
 	
 	loadrt corexy_by_hal names=corexy
 
@@ -16,11 +17,10 @@ loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EM
 
 	net user-enable-out		<= iocontrol.0.user-enable-out		=> remora.SPI-enable
 	net user-request-enable <= iocontrol.0.user-request-enable	=> remora.SPI-reset
-	net remora-status 		<= remora.SPI-status 				=> iocontrol.0.emc-enable-in
+	net remorastatus 		<= remora.SPI-status 				=> iocontrol.0.emc-enable-in
 
 
 # add the remora and motion functions to threads
-
 	addf remora.read 			servo-thread
 	addf corexy 				servo-thread
 	addf motion-command-handler servo-thread
@@ -54,30 +54,27 @@ loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EM
 
 
 # joint 2 setup
+setp remora.joint.2.scale [JOINT_2]SCALE
+setp remora.joint.2.maxaccel [JOINT_2]STEPGEN_MAXACCEL
 
-	setp remora.joint.2.scale [JOINT_2]SCALE
-	setp remora.joint.2.maxaccel [JOINT_2]STEPGEN_MAXACCEL
-
-	net j2pos-cmd 		joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
-	net j2pos-fb 		remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
-	net j2enable 		joint.2.amp-enable-out 	=> remora.joint.2.enable
+net j2pos-cmd 		joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
+net j2pos-fb 		remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
+net j2enable 		joint.2.amp-enable-out 	=> remora.joint.2.enable
 
 
 # joint 3 setup
+setp remora.joint.3.scale [JOINT_3]SCALE
+setp remora.joint.3.maxaccel [JOINT_3]STEPGEN_MAXACCEL
 
-	setp remora.joint.3.scale [JOINT_3]SCALE
-	setp remora.joint.3.maxaccel [JOINT_3]STEPGEN_MAXACCEL
-
-	net j3pos-cmd 		joint.3.motor-pos-cmd 	=> remora.joint.3.pos-cmd
-	net j3pos-fb 		remora.joint.3.pos-fb 	=> joint.3.motor-pos-fb
-	net j3enable 		joint.3.amp-enable-out 	=> remora.joint.3.enable
+net j3pos-cmd 		joint.3.motor-pos-cmd 	=> remora.joint.3.pos-cmd
+net j3pos-fb 		remora.joint.3.pos-fb 	=> joint.3.motor-pos-fb
+net j3enable 		joint.3.amp-enable-out 	=> remora.joint.3.enable
 
 
 # joint 4 setup
+setp remora.joint.4.scale [JOINT_4]SCALE
+setp remora.joint.4.maxaccel [JOINT_4]STEPGEN_MAXACCEL
 
-	setp remora.joint.4.scale [JOINT_4]SCALE
-	setp remora.joint.4.maxaccel [JOINT_4]STEPGEN_MAXACCEL
-
-	net j4pos-cmd 		joint.4.motor-pos-cmd 	=> remora.joint.4.pos-cmd
-	net j4pos-fb 		remora.joint.4.pos-fb 	=> joint.4.motor-pos-fb
-	net j4enable 		joint.4.amp-enable-out 	=> remora.joint.4.enable
+net j4pos-cmd 		joint.4.motor-pos-cmd 	=> remora.joint.4.pos-cmd
+net j4pos-fb 		remora.joint.4.pos-fb 	=> joint.4.motor-pos-fb
+net j4enable 		joint.4.amp-enable-out 	=> remora.joint.4.enable

@@ -88,6 +88,7 @@ enum State {
 };
 
 uint8_t resetCnt;
+volatile uint8_t rejectCnt;
 
 // boolean
 static volatile bool SPIdata;
@@ -193,16 +194,22 @@ void tc2_callback ()
     {
       case PRU_READ:
         SPIdata = true;
+        rejectCnt = 0;
         dma.Disable( spiDMAmemcpy2->channelNum()  );
         break;
 
       case PRU_WRITE:
         SPIdata = true;
+        rejectCnt = 0;
         dma.Prepare( spiDMAmemcpy1 );
         break;
 
       default:
-        SPIdataError = true;
+        rejectCnt++;
+        if (rejectCnt > 5)
+        {
+            SPIdataError = true;
+        }
         dma.Disable( spiDMAmemcpy2->channelNum()  );
     }
 
@@ -228,16 +235,22 @@ void tc3_callback ()
     {
       case PRU_READ:
         SPIdata = true;
+        rejectCnt = 0;
         dma.Disable( spiDMAmemcpy1->channelNum()  );
         break;
 
       case PRU_WRITE:
         SPIdata = true;
+        rejectCnt = 0;
         dma.Prepare( spiDMAmemcpy2 );
         break;
 
       default:
-        SPIdataError = true;
+        rejectCnt++;
+        if (rejectCnt > 5)
+        {
+            SPIdataError = true;
+        }
         dma.Disable( spiDMAmemcpy1->channelNum()  );
     }
 
@@ -819,7 +832,7 @@ int main() {
             else
             {
                 // no SPI data received by DMA
-                ++resetCnt;
+                resetCnt++;
             }
 
             if (resetCnt > SPI_ERR_MAX)

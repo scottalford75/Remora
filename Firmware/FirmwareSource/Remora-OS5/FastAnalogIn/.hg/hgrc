@@ -1,6 +1,6 @@
 # example repository config (see 'hg help config' for more info)
 [paths]
-mbed-studio-cache = c:\Users\Scott\AppData\Local\Mbed Studio\library-cache\os.mbed.com\users\Sissors\code\FastAnalogIn
+mbed-studio-cache = c:\Users\tanya\AppData\Local\Mbed Studio\library-cache\os.mbed.com\users\Sissors\code\FastAnalogIn
 default = https://os.mbed.com/users/Sissors/code/FastAnalogIn/
 
 # path aliases to other clones of this repo in URLs or filesystem paths
