@@ -668,7 +668,7 @@ void update_freq(void *arg, long period)
 
 			/* POSITION CONTROL MODE */
 
-			// use "PID" control with only Proportional (pgain, ff1gain and deadband)
+			// use Proportional control with feed forward (pgain, ff1gain and deadband)
 			
 			if (*(data->pgain[i]) != 0)
 			{
