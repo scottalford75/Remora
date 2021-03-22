@@ -44,6 +44,7 @@ loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EM
 
 # joint 2 setup
 
+	setp remora.joint.2.deadband 0.005
 	setp remora.joint.2.scale [JOINT_2]SCALE
 	setp remora.joint.2.maxaccel [JOINT_2]STEPGEN_MAXACCEL
 
@@ -61,4 +62,12 @@ loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EM
 	net j3pos-fb 		remora.joint.3.pos-fb 	=> joint.3.motor-pos-fb
 	net j3enable 		joint.3.amp-enable-out 	=> remora.joint.3.enable
 
+# joint 4 setup
+#
+#	setp remora.joint.4.scale [JOINT_4]SCALE
+#	setp remora.joint.4.maxaccel [JOINT_4]STEPGEN_MAXACCEL
+#
+#	net j4pos-cmd 		joint.4.motor-pos-cmd 	=> remora.joint.4.pos-cmd
+#	net j4pos-fb 		remora.joint.4.pos-fb 	=> joint.4.motor-pos-fb
+#	net j4enable 		joint.4.amp-enable-out 	=> remora.joint.4.enable
 
