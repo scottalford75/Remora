@@ -14,6 +14,7 @@
 #define PRU_DATA		    0x64617461 	    // "data" SPI payload
 #define PRU_READ            0x72656164      // "read" SPI payload
 #define PRU_WRITE           0x77726974      // "writ" SPI payload
+#define PRU_ESTOP           0x65737470      // "estp" SPI payload
 
 
 // Serial configuration

@@ -50,6 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "modules/temperature/temperature.h"
 #include "modules/rcservo/rcservo.h"
 #include "modules/switch/switch.h"
+#include "modules/eStop/eStop.h"
 
 #include "sensors/thermistor/thermistor.h"
 
@@ -116,6 +117,7 @@ volatile rxData_t rxData;
 volatile txData_t txData;
 
 // pointers to data
+volatile int32_t* ptrTxHeader;  
 volatile bool*    ptrPRUreset;
 volatile int32_t* ptrJointFreqCmd[JOINTS];
 volatile int32_t* ptrJointFeedback[JOINTS];
@@ -542,7 +544,22 @@ void loadModules()
         {
             printf("\nServo thread object\n");
 
-            if (!strcmp(type, "Reset Pin"))
+            if (!strcmp(type, "eStop"))
+            {
+                const char* comment = module["Comment"];
+                printf("%s\n",comment);
+    
+                const char* pin = module["Pin"];
+            
+                ptrTxHeader = &txData.header;
+    
+                printf("Make eStop at pin %s\n", pin);
+
+                Module* estop = new eStop(*ptrTxHeader, pin);
+                servoThread->registerModule(estop);
+
+            }
+            else if (!strcmp(type, "Reset Pin"))
             {
                 const char* comment = module["Comment"];
                 printf("%s\n",comment);

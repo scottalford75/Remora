@@ -843,6 +843,11 @@ void spi_read()
 						}
 					}
 					break;
+					
+				case PRU_ESTOP:
+					// we have an eStop notification from the PRU
+					*(data->SPIstatus) = 0;
+					 rtapi_print_msg(RTAPI_MSG_ERR, "An E-stop is active");
 
 				default:
 					// we have received a BAD payload from the PRU
