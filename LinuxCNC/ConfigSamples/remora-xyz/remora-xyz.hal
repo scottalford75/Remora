@@ -20,7 +20,7 @@
 	addf motion-controller servo-thread
 	addf remora.update-freq servo-thread
 	addf remora.write servo-thread
-ppt
+
 
 # Joint 0 setup
 
