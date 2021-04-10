@@ -100,10 +100,12 @@ typedef union
   struct
   {
 	int32_t header;
-	uint8_t jointEnable;
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
-    uint8_t outputs;
+	uint8_t jointEnable;
+	uint8_t outputs;
+	uint8_t spare2;
+    uint8_t spare1;
   };
 } txData_t;
 
