@@ -1,0 +1,8 @@
+# halshow watchlist created Mon Mar 29 02:05:01 UTC 2021
+
+pin+remora.PV.2
+pin+remora.joint.0.encoder-cnt
+pin+encoderJ0.position
+pin+j0pid.feedback
+pin+j0pid.command
+pin+j0pid.output

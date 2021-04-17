@@ -1,0 +1,38 @@
+[
+    {
+        "file": "/home/alarm/qtpyvcp/sim/example_gcode/qtpyvcp.ngc", 
+        "interp_mode": "Idle", 
+        "message": "all joints must be homed before going into coordinated mode", 
+        "task_mode": "Manual", 
+        "task_state": "E-Stop", 
+        "timestamp": 1553397804.279701, 
+        "type": "error"
+    }, 
+    {
+        "file": "/home/alarm/qtpyvcp/sim/example_gcode/qtpyvcp.ngc", 
+        "interp_mode": "Idle", 
+        "message": "all joints must be homed before going into coordinated mode", 
+        "task_mode": "Manual", 
+        "task_state": "On", 
+        "timestamp": 1553397836.775514, 
+        "type": "error"
+    }, 
+    {
+        "file": "/home/alarm/linuxcnc/nc_files/3dtest.ngc", 
+        "interp_mode": "Waiting", 
+        "message": "joint 0 following error", 
+        "task_mode": "Auto", 
+        "task_state": "On", 
+        "timestamp": 1553397882.520169, 
+        "type": "error"
+    }, 
+    {
+        "file": "/home/alarm/linuxcnc/nc_files/3dtest.ngc", 
+        "interp_mode": "Waiting", 
+        "message": "joint 0 following error", 
+        "task_mode": "Auto", 
+        "task_state": "On", 
+        "timestamp": 1553397900.177957, 
+        "type": "error"
+    }
+]

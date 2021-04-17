@@ -1,0 +1,23 @@
+# Include your custom_postgui HAL commands here
+
+# connect GUI to HAL pins
+
+net bed-SP  		=> pyvcp.bed-SP
+net ext0-SP  		=> pyvcp.ext0-SP
+net ext0-fan-SP 	=> pyvcp.ext0-fan-SP
+net BLtouch-SP 		=> pyvcp.BLtouch-SP
+
+net bed-PV 		=> pyvcp.bed-PV
+net ext0-PV 		=> pyvcp.ext0-PV
+
+
+# bed compensation
+
+net j2pos-cmd 		=> pyvcp.motor-pos-cmd.2-f
+net xpos-cmd  		=> pyvcp.x-pos-cmd-f
+net ypos-cmd 		=> pyvcp.y-pos-cmd-f
+net zpos-cmd 		=> pyvcp.z-pos-cmd-f
+net eoffset-active 	<= axis.z.eoffset 		=> pyvcp.z-offset-f
+net E:z-offset-request 	<= axis.z.eoffset-request  	=> pyvcp.z-offset-request-f
+net E:z-enable 		<= pyvcp.z-enable 		=> compensation.enable-in
+net E:reset 		<= pyvcp.reset 			=> remora.PRU-reset
