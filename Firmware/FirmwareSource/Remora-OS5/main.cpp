@@ -591,9 +591,36 @@ void loadModules()
     
                 const char* pin = module["Pin"];
                 const char* mode = module["Mode"];
+                const char* modifier = module["Modifier"];
                 int dataBit = module["Data Bit"];
-                bool invert = module["Invert"];
-            
+
+                int mod;
+
+                if (!strcmp(modifier,"Invert"))
+                {
+                    mod = INVERT;
+                }
+                else if (!strcmp(modifier,"Open Drain"))
+                {
+                    mod = OPENDRAIN;
+                }
+                else if (!strcmp(modifier,"Pull Up"))
+                {
+                    mod = PULLUP;
+                }
+                else if (!strcmp(modifier,"Pull Down"))
+                {
+                    mod = PULLDOWN;
+                }
+                else if (!strcmp(modifier,"Pull None"))
+                {
+                    mod = PULLNONE;
+                }
+                else
+                {
+                    mod = NONE;
+                }
+
                 ptrOutputs = &rxData.outputs;
                 ptrInputs = &txData.inputs;
     
@@ -601,12 +628,14 @@ void loadModules()
     
                 if (!strcmp(mode,"Output"))
                 {
-                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert);
+                    //Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert);
+                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else if (!strcmp(mode,"Input"))
                 {
-                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert);
+                    //Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert);
+                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else

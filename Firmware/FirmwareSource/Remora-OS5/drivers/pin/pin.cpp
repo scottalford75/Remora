@@ -65,6 +65,16 @@ Pin::Pin(std::string portAndPin, int dir)
     }
 }
 
+// Configure this pin as OD
+void Pin::as_open_drain(){
+    if( this->portNumber == 0 ){ LPC_PINCON->PINMODE_OD0 |= (1<<this->pin); }
+    if( this->portNumber == 1 ){ LPC_PINCON->PINMODE_OD1 |= (1<<this->pin); }
+    if( this->portNumber == 2 ){ LPC_PINCON->PINMODE_OD2 |= (1<<this->pin); }
+    if( this->portNumber == 3 ){ LPC_PINCON->PINMODE_OD3 |= (1<<this->pin); }
+    if( this->portNumber == 4 ){ LPC_PINCON->PINMODE_OD4 |= (1<<this->pin); }
+    pull_none(); // no pull up by default
+}
+
 // Configure this pin as no pullup or pulldown
 void Pin::pull_none()
 {

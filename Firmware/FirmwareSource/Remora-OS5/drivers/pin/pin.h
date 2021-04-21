@@ -25,6 +25,7 @@ class Pin
 
         Pin(std::string, int);
 
+        void as_open_drain();
         void pull_none();
         void pull_up();
         void pull_down();
