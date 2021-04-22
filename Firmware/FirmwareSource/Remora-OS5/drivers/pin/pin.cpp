@@ -7,7 +7,45 @@
 
 #include "LPC17xx.h"
 
-Pin::Pin(std::string portAndPin, int dir)
+Pin::Pin(std::string portAndPin, int dir) :
+    portAndPin(portAndPin),
+    dir(dir)
+{
+    this->configPin();
+}
+
+Pin::Pin(std::string portAndPin, int dir, int modifier) :
+    portAndPin(portAndPin),
+    dir(dir),
+    modifier(modifier)
+{
+    this->configPin();
+
+    if (this->dir == 0) //input
+    {
+        switch(this->modifier)
+        {
+            case OPENDRAIN:
+                printf("  Setting pin as open drain\n");
+                this->as_open_drain();
+                break;
+            case PULLUP:
+                printf("  Setting pin as pull_up\n");
+                this->pull_up();
+                break;
+            case PULLDOWN:
+                printf("  Setting pin as pull_down\n");
+                this->pull_down();
+                break;
+            case PULLNONE:
+                printf("  Setting pin as pull_none\n");
+                this->pull_none();
+                break;
+        }
+    }
+}
+
+void Pin::configPin()
 {
     printf("Creating Pin @\n");
 
@@ -16,7 +54,7 @@ Pin::Pin(std::string portAndPin, int dir)
     // The method below to determine the port and pin from the string is taken from Smoothieware, thanks!
 
     // cs is the current position in the string
-    const char* cs = portAndPin.c_str();
+    const char* cs = this->portAndPin.c_str();
 
     // cn is the position of the next char after the number we just read
     char* cn = NULL;
@@ -44,7 +82,7 @@ Pin::Pin(std::string portAndPin, int dir)
             printf("  pin = %d\n", this->pin);
 
             // if strtol read some numbers, cn will point to the first non-digit
-            if ((cn > cs) && (this->pin < 32) && (dir >= 0))
+            if ((cn > cs) && (this->pin < 32) && (this->dir >= 0))
             {
                 // configure pin direction: FIODIR
                 if (dir == INPUT)
@@ -58,12 +96,11 @@ Pin::Pin(std::string portAndPin, int dir)
 
                 // configure
                 this->port->FIOMASK &= ~(1 << this->pin);
-
-                // TODO ADD - check for modifiers
             }
         }
     }
 }
+
 
 // Configure this pin as OD
 void Pin::as_open_drain(){

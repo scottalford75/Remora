@@ -13,10 +13,19 @@
 #define INPUT 0x0
 #define OUTPUT 0x1
 
+#define NONE        0b000
+#define OPENDRAIN   0b001
+#define PULLUP      0b010
+#define PULLDOWN    0b011
+#define PULLNONE    0b100
+
 class Pin
 {
     private:
 
+        std::string         portAndPin;
+        uint8_t             dir;
+        uint8_t             modifier;
         uint8_t             portNumber;
         uint8_t             pin;
         LPC_GPIO_TypeDef*   port;
@@ -24,7 +33,9 @@ class Pin
     public:
 
         Pin(std::string, int);
+        Pin(std::string, int, int);
 
+        void configPin();
         void as_open_drain();
         void pull_none();
         void pull_up();

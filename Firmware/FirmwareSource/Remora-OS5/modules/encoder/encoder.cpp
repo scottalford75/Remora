@@ -54,14 +54,15 @@
 	}
 */
 
-Encoder::Encoder(volatile float &ptrEncoderCount, std::string ChA, std::string ChB) :
+Encoder::Encoder(volatile float &ptrEncoderCount, std::string ChA, std::string ChB, int modifier) :
 	ptrEncoderCount(&ptrEncoderCount),
 	ChA(ChA),
-	ChB(ChB)
+	ChB(ChB),
+    modifier(modifier)
 {
-	this->pin1 = new Pin(this->ChA, INPUT);			// create Pin
-    this->pin2 = new Pin(this->ChB, INPUT);			// create Pin
-	this->count = 0;								// initialise the count to 0
+	this->pin1 = new Pin(this->ChA, INPUT, this->modifier);			// create Pin
+    this->pin2 = new Pin(this->ChB, INPUT, this->modifier);			// create Pin
+	this->count = 0;								                // initialise the count to 0
 }
 
 void Encoder::update()

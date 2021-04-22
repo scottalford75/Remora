@@ -512,12 +512,36 @@ void loadModules()
                 int pv = module["PV[i]"];
                 const char* pin1 = module["ChA Pin"];
                 const char* pin2 = module["ChB Pin"];
+                const char* modifier = module["Modifier"];
             
                 printf("Creating Quadrature Encoder at pins %s and %s\n", pin1, pin2);
+
+                int mod;
+
+                if (!strcmp(modifier,"Open Drain"))
+                {
+                    mod = OPENDRAIN;
+                }
+                else if (!strcmp(modifier,"Pull Up"))
+                {
+                    mod = PULLUP;
+                }
+                else if (!strcmp(modifier,"Pull Down"))
+                {
+                    mod = PULLDOWN;
+                }
+                else if (!strcmp(modifier,"Pull None"))
+                {
+                    mod = PULLNONE;
+                }
+                else
+                {
+                    mod = NONE;
+                }
                 
                 ptrProcessVariable[pv]  = &txData.processVariable[pv];
 
-                Module* encoder = new Encoder(*ptrProcessVariable[pv], pin1, pin2);
+                Module* encoder = new Encoder(*ptrProcessVariable[pv], pin1, pin2, mod);
                 baseThread->registerModule(encoder);
 
             }
@@ -591,16 +615,13 @@ void loadModules()
     
                 const char* pin = module["Pin"];
                 const char* mode = module["Mode"];
+                bool invert = module["Invert"];
                 const char* modifier = module["Modifier"];
                 int dataBit = module["Data Bit"];
 
                 int mod;
 
-                if (!strcmp(modifier,"Invert"))
-                {
-                    mod = INVERT;
-                }
-                else if (!strcmp(modifier,"Open Drain"))
+                if (!strcmp(modifier,"Open Drain"))
                 {
                     mod = OPENDRAIN;
                 }
@@ -629,13 +650,13 @@ void loadModules()
                 if (!strcmp(mode,"Output"))
                 {
                     //Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, mod);
+                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else if (!strcmp(mode,"Input"))
                 {
                     //Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, mod);
+                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else

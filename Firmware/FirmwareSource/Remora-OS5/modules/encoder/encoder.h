@@ -18,6 +18,7 @@ class Encoder : public Module
 
 		volatile float *ptrEncoderCount; 	// pointer to the data source
 
+        int8_t  modifier;
         uint8_t state;
         int32_t count;
 
@@ -26,7 +27,7 @@ class Encoder : public Module
 		Pin* pin1;
         Pin* pin2;
 
-		Encoder(volatile float&, std::string, std::string);
+		Encoder(volatile float&, std::string, std::string, int);
 
 		virtual void update(void);	// Module default interface
 };
