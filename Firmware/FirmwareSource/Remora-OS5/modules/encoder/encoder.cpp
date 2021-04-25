@@ -8,26 +8,26 @@
 // credit to https://github.com/PaulStoffregen/Encoder/blob/master/Encoder.h
 
 //                           _______         _______       
-//               Pin1 ______|       |_______|       |______ Pin1
+//               PinA ______|       |_______|       |______ PinA
 // negative <---         _______         _______         __      --> positive
-//               Pin2 __|       |_______|       |_______|   Pin2
+//               PinB __|       |_______|       |_______|   PinB
 
 		//	new	new	old	old
-		//	pin2	pin1	pin2	pin1	Result
+		//	pinB	pinA	pinB	pinA	Result
 		//	----	----	----	----	------
 		//	0	0	0	0	no movement
 		//	0	0	0	1	+1
 		//	0	0	1	0	-1
-		//	0	0	1	1	+2  (assume pin1 edges only)
+		//	0	0	1	1	+2  (assume pinA edges only)
 		//	0	1	0	0	-1
 		//	0	1	0	1	no movement
-		//	0	1	1	0	-2  (assume pin1 edges only)
+		//	0	1	1	0	-2  (assume pinA edges only)
 		//	0	1	1	1	+1
 		//	1	0	0	0	+1
-		//	1	0	0	1	-2  (assume pin1 edges only)
+		//	1	0	0	1	-2  (assume pinA edges only)
 		//	1	0	1	0	no movement
 		//	1	0	1	1	-1
-		//	1	1	0	0	+2  (assume pin1 edges only)
+		//	1	1	0	0	+2  (assume pinA edges only)
 		//	1	1	0	1	-1
 		//	1	1	1	0	+1
 		//	1	1	1	1	no movement
@@ -36,8 +36,8 @@
 	//
 	void update(void) {
 		uint8_t s = state & 3;
-		if (digitalRead(pin1)) s |= 4;
-		if (digitalRead(pin2)) s |= 8;
+		if (digitalRead(pinA)) s |= 4;
+		if (digitalRead(pinB)) s |= 8;
 		switch (s) {
 			case 0: case 5: case 10: case 15:
 				break;
@@ -60,17 +60,37 @@ Encoder::Encoder(volatile float &ptrEncoderCount, std::string ChA, std::string C
 	ChB(ChB),
     modifier(modifier)
 {
-	this->pin1 = new Pin(this->ChA, INPUT, this->modifier);			// create Pin
-    this->pin2 = new Pin(this->ChB, INPUT, this->modifier);			// create Pin
+	this->pinA = new Pin(this->ChA, INPUT, this->modifier);			// create Pin
+    this->pinB = new Pin(this->ChB, INPUT, this->modifier);			// create Pin
+    this->hasIndex = false;
 	this->count = 0;								                // initialise the count to 0
+}
+
+Encoder::Encoder(volatile float &ptrEncoderCount, volatile uint8_t &ptrData, int bitNumber, std::string ChA, std::string ChB, std::string Index, int modifier) :
+	ptrEncoderCount(&ptrEncoderCount),
+    ptrData(&ptrData),
+    bitNumber(bitNumber),
+	ChA(ChA),
+	ChB(ChB),
+    Index(Index),
+    modifier(modifier)
+{
+	this->pinA = new Pin(this->ChA, INPUT, this->modifier);			// create Pin
+    this->pinB = new Pin(this->ChB, INPUT, this->modifier);			// create Pin
+    this->pinI = new Pin(this->Index, INPUT, this->modifier);		// create Pin
+    this->hasIndex = true;
+    this->indexPulse = (PRU_BASEFREQ / PRU_SERVOFREQ) * 1.5;        // output the index pulse for 1.5 servo thread periods so LinuxCNC sees it
+	this->count = 0;								                // initialise the count to 0
+    this->pulseCount = 0;                                           // number of base thread periods to pulse the index output    
+    this->mask = 1 << this->bitNumber;
 }
 
 void Encoder::update()
 {
     uint8_t s = this->state & 3;
 
-    if (this->pin1->get()) s |= 4;
-    if (this->pin2->get()) s |= 8;
+    if (this->pinA->get()) s |= 4;
+    if (this->pinB->get()) s |= 8;
 
     switch (s) {
 		case 0: case 5: case 10: case 15:
@@ -88,5 +108,30 @@ void Encoder::update()
 	this->state = (s >> 2);
 
     *(this->ptrEncoderCount) = this->count;
+
+    if (this->hasIndex)                                     // we have an index pin
+    {
+        // handle index, index pulse and pulse count
+        if (this->pinI->get() && (this->pulseCount == 0))    // rising edge on index pulse
+        {
+            this->indexCount = this->count;                 //  capture the encoder count at the index, send this to linuxCNC for one servo period 
+            *(this->ptrEncoderCount) = this->indexCount;
+            this->pulseCount = this->indexPulse;        
+            *(this->ptrData) |= this->mask;                 // set bit in data source high
+        }
+        else if (this->pulseCount > 0)                      // maintain both index output and encoder count for the latch period
+        {
+            this->pulseCount--;                             // decrement the counter
+        }
+        else
+        {
+            *(this->ptrData) &= ~this->mask;                // set bit in data source low
+            *(this->ptrEncoderCount) = this->count;         // update encoder count
+        }
+    }
+    else
+    {
+        *(this->ptrEncoderCount) = this->count;             // update encoder count
+    }
 }
 

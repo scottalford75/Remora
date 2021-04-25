@@ -510,11 +510,13 @@ void loadModules()
                 printf("%s\n",comment);
     
                 int pv = module["PV[i]"];
-                const char* pin1 = module["ChA Pin"];
-                const char* pin2 = module["ChB Pin"];
+                const char* pinA = module["ChA Pin"];
+                const char* pinB = module["ChB Pin"];
+                const char* pinI = module["Index Pin"];
+                int dataBit = module["Data Bit"];
                 const char* modifier = module["Modifier"];
             
-                printf("Creating Quadrature Encoder at pins %s and %s\n", pin1, pin2);
+                printf("Creating Quadrature Encoder at pins %s and %s\n", pinA, pinB);
 
                 int mod;
 
@@ -540,9 +542,19 @@ void loadModules()
                 }
                 
                 ptrProcessVariable[pv]  = &txData.processVariable[pv];
+                ptrInputs = &txData.inputs;
 
-                Module* encoder = new Encoder(*ptrProcessVariable[pv], pin1, pin2, mod);
-                baseThread->registerModule(encoder);
+                if (!strcmp(pinI,""))
+                {
+                    Module* encoder = new Encoder(*ptrProcessVariable[pv], pinA, pinB, mod);
+                    baseThread->registerModule(encoder);
+                }
+                else
+                {
+                    printf("  Encoder has index at pin %s\n", pinI);
+                    Module* encoder = new Encoder(*ptrProcessVariable[pv], *ptrInputs, dataBit, pinA, pinB, pinI, mod);
+                    baseThread->registerModule(encoder);
+                }
 
             }
             else if (!strcmp(type,"RCServo"))

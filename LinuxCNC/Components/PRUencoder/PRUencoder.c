@@ -47,8 +47,10 @@ RTAPI_MP_ARRAY_STRING(names, MAX_ENCODER,"encoder names");
 typedef struct {
     hal_bit_t 		*reset;				// counter reset input
 	hal_float_t 	*raw_count;			// pin: input, raw encoder count
+	hal_bit_t 		*phaseZ;			// index pulse input
+	hal_bit_t 		*index_ena;			// index enable input
 	hal_float_t 	count;				
-	hal_float_t 	zero_count;			// raw count value the encoder was "zeroed"
+	hal_float_t 	index_count;		// raw count value the encoder index position
 	hal_float_t 	*pos;				// scaled position (floating point)
 	hal_float_t		old_pos;
 	hal_float_t 	*pos_scale;			// scaling factor for pos
@@ -198,11 +200,17 @@ static void capture(void *arg, long period)
 			// running count of edges seen since startup.  The
 			// public "count" is the difference between raw_count
 			// and index_count, so it will become zero.
-			encoder->zero_count = *(encoder->raw_count);
+			encoder->index_count = *(encoder->raw_count);
 		}
 		
+		// check for index enabled and rising edges
+		if (*(encoder->phaseZ) && *(encoder->index_ena)) {
+			encoder->index_count = *(encoder->raw_count);
+			*(encoder->index_ena) = 0;
+		}
+			
 		// compute net counts
-		encoder->count = *(encoder->raw_count) - encoder->zero_count;
+		encoder->count = *(encoder->raw_count) - encoder->index_count;
 				
 		// scale count to make floating point position
 		encoder->old_pos = *(encoder->pos);
@@ -236,13 +244,25 @@ static int export_encoder(hal_encoder_t * addr, char * prefix)
     rtapi_set_msg_level(RTAPI_MSG_WARN);
 
     /* export pins */
+	
+    retval = hal_pin_bit_newf(HAL_IN, &(addr->phaseZ), comp_id,
+            "%s.phase-Z", prefix);
+    if (retval != 0) {
+	return retval;
+    }
 
-    retval = hal_pin_bit_newf(HAL_IN, &(addr->reset), comp_id,
-            "%s.reset", prefix);
+    retval = hal_pin_bit_newf(HAL_IO, &(addr->index_ena), comp_id,
+            "%s.index-enable", prefix);
     if (retval != 0) {
 	return retval;
     }
 	
+	retval = hal_pin_bit_newf(HAL_IN, &(addr->reset), comp_id,
+            "%s.reset", prefix);
+    if (retval != 0) {
+	return retval;
+    }
+	phase-Z
     retval = hal_pin_float_newf(HAL_IN, &(addr->raw_count), comp_id,
 			"%s.raw_count", prefix);
     if (retval != 0) {
