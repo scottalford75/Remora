@@ -262,7 +262,7 @@ static int export_encoder(hal_encoder_t * addr, char * prefix)
     if (retval != 0) {
 	return retval;
     }
-	phase-Z
+
     retval = hal_pin_float_newf(HAL_IN, &(addr->raw_count), comp_id,
 			"%s.raw_count", prefix);
     if (retval != 0) {
