@@ -27,3 +27,8 @@ void Interrupt::TIMER1_Wrapper(void)
 {
 	ISRVectorTable[TIMER1_IRQn]->ISR_Handler();
 }
+
+void Interrupt::QEI_Wrapper(void)
+{
+	ISRVectorTable[QEI_IRQn]->ISR_Handler();
+}

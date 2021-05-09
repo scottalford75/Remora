@@ -51,6 +51,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "modules/rcservo/rcservo.h"
 #include "modules/switch/switch.h"
 #include "modules/eStop/eStop.h"
+#include "modules/qei/qei.h"
 
 #include "sensors/thermistor/thermistor.h"
 
@@ -129,7 +130,7 @@ volatile uint8_t* ptrOutputs;
 
 
 /***********************************************************************
-                INTERRUPT HANDLERS
+        INTERRUPT HANDLERS - add NVIC_SetVector etc to setup()
 ************************************************************************/
 
 
@@ -150,6 +151,13 @@ void TIMER1_IRQHandler(void)
     LPC_TIM1->IR = isrMask; /* Clear the Interrupt Bit */
 
     Interrupt::TIMER1_Wrapper();
+}
+
+void QEI_IRQHandler(void)
+{
+    // QEI (quatrature encoder interface) index interrupt handler
+    LPC_QEI->QEICLR = ((uint32_t)(1<<0));   
+    Interrupt:: QEI_Wrapper();
 }
 
 void tc0_callback ()
@@ -436,6 +444,12 @@ void setup()
     servoThread = new pruThread(LPC_TIM1, TIMER1_IRQn, PRU_SERVOFREQ);
     NVIC_SetVector(TIMER1_IRQn, (uint32_t)TIMER1_IRQHandler);
     NVIC_SetPriority(TIMER1_IRQn, 3);
+
+    // Other interrupt sources
+
+    // for QEI modudule
+    NVIC_SetVector(QEI_IRQn, (uint32_t)QEI_IRQHandler);
+    NVIC_SetPriority(QEI_IRQn, 4);
 }
 
 
@@ -749,6 +763,32 @@ void loadModules()
                 else
                 {
                     printf("Error - incorrectly defined Switch\n");
+                }
+            }
+             else if (!strcmp(type,"QEI"))
+            {
+                const char* comment = module["Comment"];
+                printf("%s\n",comment);
+    
+                int pv = module["PV[i]"];
+                int dataBit = module["Data Bit"];
+                const char* index = module["Enable Index"];
+            
+                printf("Creating QEI, hardware quadrature encoder interface\n");
+           
+                ptrProcessVariable[pv]  = &txData.processVariable[pv];
+                ptrInputs = &txData.inputs;
+
+                if (!strcmp(index,"true"))
+                {
+                    printf("  Encoder has index\n");
+                    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, dataBit);
+                    baseThread->registerModule(qei);
+                }
+                else
+                {
+                    Module* qei = new QEI(*ptrProcessVariable[pv]);
+                    baseThread->registerModule(qei);
                 }
             }
         }

@@ -1,7 +1,8 @@
-data/FastAnalogIn.h.i
 data/FastAnalogIn_LPC408X.cpp.i
 data/FastAnalogIn_KLXX.cpp.i
+data/FastAnalogIn_LPC176X.cpp.i
 data/FastAnalogIn_LPC11UXX.cpp.i
-data/FastAnalogIn_KLXX_K20D50M.cpp.i
 data/FastAnalogIn.cpp.i
+data/FastAnalogIn_KLXX_K20D50M.cpp.i
 data/FastAnalogIn_LPC1768.cpp.i
+data/FastAnalogIn.h.i
