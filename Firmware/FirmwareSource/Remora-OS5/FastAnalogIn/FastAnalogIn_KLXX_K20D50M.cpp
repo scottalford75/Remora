@@ -24,6 +24,9 @@ static const PinMap PinMap_ADC[] = {
 
 FastAnalogIn::FastAnalogIn(PinName pin, bool enabled)
 {
+    if (pin == NC)
+        return;
+    
     ADCnumber = (ADCName)pinmap_peripheral(pin, PinMap_ADC);
     if (ADCnumber == (ADCName)NC) {
         error("ADC pin mapping failed");

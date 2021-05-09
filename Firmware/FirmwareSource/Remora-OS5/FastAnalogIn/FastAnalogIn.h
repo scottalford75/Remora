@@ -7,18 +7,18 @@
 #include "mbed.h"
 #include "pinmap.h"
 
-#if !defined TARGET_LPC1768 && !defined TARGET_KLXX && !defined TARGET_LPC408X && !defined TARGET_LPC11UXX && !defined TARGET_K20D5M && !defined TARGET_LPC11XX
+#if !defined TARGET_LPC176X && !defined TARGET_KLXX && !defined TARGET_LPC408X && !defined TARGET_LPC11UXX && !defined TARGET_K20D5M
     #error "Target not supported"
 #endif
 
- /** A class similar to AnalogIn, only faster, for LPC1768, LPC408X and KLxx
+ /** A class similar to AnalogIn, only faster, for LPC176X, LPC408X and KLxx
  *
  * AnalogIn does a single conversion when you read a value (actually several conversions and it takes the median of that).
  * This library runns the ADC conversion automatically in the background.
  * When read is called, it immediatly returns the last sampled value.
  *
- * LPC1768 / LPC4088
- * Using more ADC pins in continuous mode will decrease the conversion rate (LPC1768:200kHz/LPC4088:400kHz).
+ * LPC176X / LPC4088
+ * Using more ADC pins in continuous mode will decrease the conversion rate (LPC176X:200kHz/LPC4088:400kHz).
  * If you need to sample one pin very fast and sometimes also need to do AD conversions on another pin,
  * you can disable the continuous conversion on that ADC channel and still read its value.
  *
@@ -48,7 +48,7 @@
  *     }
  * }
  * @endcode
- * Example for the LPC1768 processor:
+ * Example for the LPC176X processor:
  * @code
  * // Print messages when the AnalogIn is greater than 50%
  *
