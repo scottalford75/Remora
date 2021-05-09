@@ -43,22 +43,41 @@ void pruTimer::timerTick(void)
 
 void pruTimer::startTimer(void)
 {
-	printf("	power on timer\n");
-	LPC_SC->PCONP |= (1<<SBIT_TIMER0) | (1<<SBIT_TIMER1); /* Power ON Timer0,1 */
-	//LPC_SC->PCONP |= (1<<SBIT_TIMER0) | (1<<SBIT_TIMER1) | (1<<SBIT_TIMER2) | (1<<SBIT_TIMER3); // Power ON Timers
+    if (this->timer == LPC_TIM0)
+    {
+        printf("	power on Timer 0\n");
+        LPC_SC->PCONP |= (1<<SBIT_TIMER0);
+    }
+    else if (this->timer == LPC_TIM1)
+    {
+        printf("	power on Timer 1\n");
+        LPC_SC->PCONP |= (1<<SBIT_TIMER1);
+    }
+    else if (this->timer == LPC_TIM2)
+    {
+        printf("	power on Timer 2\n");
+        LPC_SC->PCONP |= (1<<SBIT_TIMER2);
+    }
 
-	printf("	timer set MCR\n");
-	this->timer->MCR  = (1<<SBIT_MR0I) | (1<<SBIT_MR0R);     /* Clear TC on MR0 match and Generate Interrupt*/
-	//LPC_TIM1->MCR  = (1<<SBIT_MR0I) | (1<<SBIT_MR0R);
-	printf("	timer set PR\n");
-	this->timer->PR   = 0x00;
-	//LPC_TIM1->PR   = 0x00;
-	printf("	timer set PRO\n");
+    printf("	timer set MCR\n");
+    this->timer->MCR  = (1<<SBIT_MR0I) | (1<<SBIT_MR0R);     /* Clear TC on MR0 match and Generate Interrupt*/
+    
+    printf("	timer set PR\n");
+    this->timer->PR   = 0x00;
+    
+    printf("	timer set PRO\n");
     this->timer->MR0  = SystemCoreClock/4/this->frequency;
-	//LPC_TIM1->MR0  = SystemCoreClock/4/this->frequency;
-	printf("	timer start\n");
+    
+    printf("	timer start\n");
     this->timer->TCR  = (1<<SBIT_CNTEN);                     /* Start timer by setting the Counter Enable*/
-	//LPC_TIM1->TCR  = (1<<SBIT_CNTEN);
-
+    
     NVIC_EnableIRQ(this->irq);
+}
+
+void pruTimer::stopTimer()
+{
+    NVIC_DisableIRQ(this->irq);
+
+    printf("	timer stop\n");
+    this->timer->TCR  = (0<<SBIT_CNTEN);
 }

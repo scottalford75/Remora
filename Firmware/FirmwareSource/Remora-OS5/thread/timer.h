@@ -25,6 +25,7 @@ class pruTimer
 	public:
 
 		pruTimer(LPC_TIM_TypeDef* timer, IRQn_Type irq, uint32_t frequency, pruThread* ownerPtr);
+        void stopTimer(void);
 
 };
 

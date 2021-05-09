@@ -1,5 +1,3 @@
-#ifdef TARGET_LPC176X
-
 #include "FastAnalogIn.h"
 static inline int div_round_up(int x, int y)
 {
@@ -122,4 +120,4 @@ unsigned short FastAnalogIn::read_u16( void )
     return retval;
 
 }
-#endif //defined TARGET_LPC176X
+

@@ -3,6 +3,10 @@
 
 #define PRU_BASEFREQ    	40000 //24000   // PRU Base thread ISR update frequency (hz)
 #define PRU_SERVOFREQ       1000            // PRU Servo thread ISR update freqency (hz)
+#define OVERSAMPLE          3
+#define SWBAUDRATE          19200           // Software serial baud rate
+#define PRU_COMMSFREQ       (SWBAUDRATE * OVERSAMPLE)
+
 #define STEPBIT     		22            	// bit location in DDS accum
 #define STEP_MASK   		  (1L<<STEPBIT)
 

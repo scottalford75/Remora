@@ -36,6 +36,8 @@ class Pin
         Pin(std::string, int, int);
 
         void configPin();
+        void setAsOutput();
+        void setAsInput();
         void as_open_drain();
         void pull_none();
         void pull_up();

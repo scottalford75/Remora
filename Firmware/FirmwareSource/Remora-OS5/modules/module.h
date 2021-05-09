@@ -25,6 +25,7 @@ class Module
 		void runModule();			// the standard interface that the thread runs at the thread frequency, this calls update() at the module frequency
 		virtual void update();		// the standard interface for update of the module - use for stepgen, PWM etc
 		virtual void slowUpdate();	// the standard interface for the slow update - use for PID controller etc
+        virtual void configure();   // the standard interface for one off configuration
 
 };
 

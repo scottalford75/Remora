@@ -7,23 +7,17 @@
 #include "mbed.h"
 #include "pinmap.h"
 
-#if !defined TARGET_LPC176X && !defined TARGET_KLXX && !defined TARGET_LPC408X && !defined TARGET_LPC11UXX && !defined TARGET_K20D5M
-    #error "Target not supported"
-#endif
-
- /** A class similar to AnalogIn, only faster, for LPC176X, LPC408X and KLxx
+ /** A class similar to AnalogIn, only faster, for LPC176X
  *
  * AnalogIn does a single conversion when you read a value (actually several conversions and it takes the median of that).
  * This library runns the ADC conversion automatically in the background.
  * When read is called, it immediatly returns the last sampled value.
  *
- * LPC176X / LPC4088
+ * LPC176X
  * Using more ADC pins in continuous mode will decrease the conversion rate (LPC176X:200kHz/LPC4088:400kHz).
  * If you need to sample one pin very fast and sometimes also need to do AD conversions on another pin,
  * you can disable the continuous conversion on that ADC channel and still read its value.
  *
- * KLXX
- * Multiple Fast instances can be declared of which only ONE can be continuous (all others must be non-continuous).
  *
  * When continuous conversion is disabled, a read will block until the conversion is complete
  * (much like the regular AnalogIn library does).
@@ -31,23 +25,6 @@
  *
  * IMPORTANT : It does not play nicely with regular AnalogIn objects, so either use this library or AnalogIn, not both at the same time!!
  *
- * Example for the KLxx processors:
- * @code
- * // Print messages when the AnalogIn is greater than 50%
- *
- * #include "mbed.h"
- *
- * FastAnalogIn temperature(PTC2); //Fast continuous sampling on PTC2
- * FastAnalogIn speed(PTB3, 0);    //Fast non-continuous sampling on PTB3
- *
- * int main() {
- *     while(1) {
- *         if(temperature > 0.5) {
- *             printf("Too hot! (%f) at speed %f", temperature.read(), speed.read());
- *         }
- *     }
- * }
- * @endcode
  * Example for the LPC176X processor:
  * @code
  * // Print messages when the AnalogIn is greater than 50%
