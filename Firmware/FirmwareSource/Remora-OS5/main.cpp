@@ -558,7 +558,7 @@ void loadModules()
                 ptrProcessVariable[pv]  = &txData.processVariable[pv];
                 ptrInputs = &txData.inputs;
 
-                if (!strcmp(pinI,""))
+                if (pinI == nullptr)
                 {
                     Module* encoder = new Encoder(*ptrProcessVariable[pv], pinA, pinB, mod);
                     baseThread->registerModule(encoder);
