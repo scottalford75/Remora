@@ -47,6 +47,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "modules/digitalPin/digitalPin.h"
 #include "modules/encoder/encoder.h"
 #include "modules/pwm/pwm.h"
+#include "modules/pwm/hardwarePwm.h"
 #include "modules/temperature/temperature.h"
 #include "modules/rcservo/rcservo.h"
 #include "modules/switch/switch.h"
@@ -698,20 +699,47 @@ void loadModules()
                 int sp = module["SP[i]"];
                 int pwmMax = module["PWM Max"];
                 const char* pin = module["PWM Pin"];
+
+                const char* hardware = module["Hardware PWM"];
+                const char* variable = module["Variable Freq"];
+                int period_sp = module["Period SP[i]"];
+                int period = module["Period us"];
             
-                printf("Make software PWM at pin %s\n", pin);
+                printf("Make PWM at pin %s\n", pin);
                 
                 ptrSetPoint[sp] = &rxData.setPoint[sp];
-    
-                if (pwmMax != 0) // use configuration file value for pwmMax - useful for 12V on 24V systems
+
+                if (!strcmp(hardware,"True"))
                 {
-                    Module* pwm = new PWM(*ptrSetPoint[sp], pin, pwmMax);
-                    servoThread->registerModule(pwm);
+                    // Hardware PWM
+                    if (!strcmp(variable,"True"))
+                    {
+                        // Variable frequency hardware PWM
+                        ptrSetPoint[period_sp] = &rxData.setPoint[period_sp];
+
+                        Module* pwm = new HardwarePWM(*ptrSetPoint[period_sp], *ptrSetPoint[sp], period, pin);
+                        servoThread->registerModule(pwm);
+                    }
+                    else
+                    {
+                        // Fixed frequency hardware PWM
+                        Module* pwm = new HardwarePWM(*ptrSetPoint[sp], period, pin);
+                        servoThread->registerModule(pwm);
+                    }
                 }
-                else // use default value of pwmMax
+                else
                 {
-                    Module* pwm = new PWM(*ptrSetPoint[sp], pin);
-                    servoThread->registerModule(pwm);
+                    // Software PWM
+                    if (pwmMax != 0) // use configuration file value for pwmMax - useful for 12V on 24V systems
+                    {
+                        Module* pwm = new PWM(*ptrSetPoint[sp], pin, pwmMax);
+                        servoThread->registerModule(pwm);
+                    }
+                    else // use default value of pwmMax
+                    {
+                        Module* pwm = new PWM(*ptrSetPoint[sp], pin);
+                        servoThread->registerModule(pwm);
+                    }
                 }
             }
             else if (!strcmp(type,"Temperature"))

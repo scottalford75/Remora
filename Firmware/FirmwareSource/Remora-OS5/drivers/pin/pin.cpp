@@ -176,3 +176,32 @@ PinName Pin::pinToPinName()
       return NC;
   }
 }
+
+// If available on this pin, return mbed hardware pwm class for this pin
+PwmOut* Pin::hardware_pwm()
+{
+    if (this->portNumber == 1)
+    {
+        if (this->pin == 18) { return new mbed::PwmOut(P1_18); }
+        if (this->pin == 20) { return new mbed::PwmOut(P1_20); }
+        if (this->pin == 21) { return new mbed::PwmOut(P1_21); }
+        if (this->pin == 23) { return new mbed::PwmOut(P1_23); }
+        if (this->pin == 24) { return new mbed::PwmOut(P1_24); }
+        if (this->pin == 26) { return new mbed::PwmOut(P1_26); }
+    }
+    else if (this->portNumber == 2)
+    {
+        if (this->pin == 0) { return new mbed::PwmOut(P2_0); }
+        if (this->pin == 1) { return new mbed::PwmOut(P2_1); }
+        if (this->pin == 2) { return new mbed::PwmOut(P2_2); }
+        if (this->pin == 3) { return new mbed::PwmOut(P2_3); }
+        if (this->pin == 4) { return new mbed::PwmOut(P2_4); }
+        if (this->pin == 5) { return new mbed::PwmOut(P2_5); }
+    }
+    else if (this->portNumber == 3)
+    {
+        if (this->pin == 25) { return new mbed::PwmOut(P3_25); }
+        if (this->pin == 26) { return new mbed::PwmOut(P3_26); }
+    }
+    return nullptr;
+}

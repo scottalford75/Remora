@@ -35,6 +35,8 @@ class Pin
         Pin(std::string, int);
         Pin(std::string, int, int);
 
+        PwmOut* hardware_pwm();
+
         void configPin();
         void as_open_drain();
         void pull_none();
