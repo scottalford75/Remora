@@ -807,7 +807,7 @@ void loadModules()
                 ptrProcessVariable[pv]  = &txData.processVariable[pv];
                 ptrInputs = &txData.inputs;
 
-                if (!strcmp(index,"true"))
+                if (!strcmp(index,"True"))
                 {
                     printf("  Encoder has index\n");
                     Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, dataBit);

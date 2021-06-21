@@ -36,7 +36,7 @@ void Temperature::slowUpdate()
 	this->temperaturePV = this->Sensor->getTemperature();
 
   // check for disconnected temperature sensor
-  if (this->temperaturePV > 10)
+  if (this->temperaturePV > 0)
   {
      *(this->ptrFeedback) = this->temperaturePV;
   }
