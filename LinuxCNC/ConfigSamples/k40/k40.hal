@@ -1,0 +1,132 @@
+
+loadrt [KINS]KINEMATICS
+loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
+
+# load the Remora real-time component
+
+	loadrt remora
+
+
+# estop and SPI comms enable and feedback
+
+	net user-enable-out	<= iocontrol.0.user-enable-out		=> remora.SPI-enable
+	net user-request-enable <= iocontrol.0.user-request-enable	=> remora.SPI-reset
+	net remora-status 	<= remora.SPI-status 		=> iocontrol.0.emc-enable-in
+
+
+# add the remora and motion functions to threads
+
+	addf remora.read 		servo-thread
+	addf motion-command-handler	servo-thread
+	addf motion-controller 		servo-thread
+	addf remora.update-freq 	servo-thread
+	addf remora.write 		servo-thread
+
+# end-stops
+	net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	# net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
+	net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	# net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
+	#net Z-min 	remora.input.4 	=> joint.2.home-sw-in joint.2.neg-lim-sw-in
+	# net Z-max 	remora.input.5 	=> joint.2.pos-lim-sw-in
+
+
+# joint 0 setup
+
+	setp remora.joint.0.scale 	[JOINT_0]SCALE
+	setp remora.joint.0.maxaccel 	[JOINT_0]STEPGEN_MAXACCEL
+
+	net j0pos-cmd 		joint.0.motor-pos-cmd 	=> remora.joint.0.pos-cmd
+	net j0pos-fb 		remora.joint.0.pos-fb 	=> joint.0.motor-pos-fb
+	net j0enable 		joint.0.amp-enable-out 	=> remora.joint.0.enable
+
+
+# joint 1 setup
+
+	setp remora.joint.1.scale 	[JOINT_1]SCALE
+	setp remora.joint.1.maxaccel 	[JOINT_1]STEPGEN_MAXACCEL
+
+	net j1pos-cmd 		joint.1.motor-pos-cmd 	=> remora.joint.1.pos-cmd
+	net j1pos-fb 		remora.joint.1.pos-fb 	=> joint.1.motor-pos-fb
+	net j1enable 		joint.1.amp-enable-out 	=> remora.joint.1.enable
+
+# joint 2 setup
+#
+#	setp remora.joint.2.deadband 0.005
+#	setp remora.joint.2.scale	[JOINT_2]SCALE
+#	setp remora.joint.2.maxaccel	[JOINT_2]STEPGEN_MAXACCEL
+#
+#	net j2pos-cmd 		joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
+#	net j2pos-fb 		remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
+#	net j2enable 		joint.2.amp-enable-out 	=> remora.joint.2.enable
+
+
+# joint 3 setup
+#
+#	setp remora.joint.3.scale	[JOINT_3]SCALE
+#	setp remora.joint.3.maxaccel	[JOINT_3]STEPGEN_MAXACCEL
+#	setp remora.joint.3.pgain	[JOINT_3]PGAIN
+#
+#	net j3pos-cmd 		joint.3.motor-pos-cmd 	=> remora.joint.3.pos-cmd
+#	net j3pos-fb 		remora.joint.3.pos-fb 	=> joint.3.motor-pos-fb
+#	net j3enable 		joint.3.amp-enable-out 	=> remora.joint.3.enable
+
+# joint 4 setup
+#
+#	setp remora.joint.4.scale	[JOINT_4]SCALE
+#	setp remora.joint.4.maxaccel	[JOINT_4]STEPGEN_MAXACCEL
+#	setp remora.joint.4.pgain	[JOINT_4]PGAIN
+#
+#	net j4pos-cmd 		joint.4.motor-pos-cmd 	=> remora.joint.4.pos-cmd
+#	net j4pos-fb 		remora.joint.4.pos-fb 	=> joint.4.motor-pos-fb
+#	net j4enable 		joint.4.amp-enable-out 	=> remora.joint.4.enable
+
+# tool changing
+
+#	net tool-prepare-loopback iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+#	net tool-change-loopback iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+
+# remora command outputs
+
+	#net spindle-SP	spindle.0.speed-out 	=> remora.SP.0
+	#net spindle-SP 	=> remora.SP.0
+	#net bed-heater-SP 	=> remora.SP.0
+	#net ext0-heater-SP  	=> remora.SP.1
+	#net laser-freq-SP  	=> remora.SP.1
+	#net ext0-cooling-SP 	=> remora.SP.2
+	#net BLtouch-SP 		=> remora.SP.3
+
+
+# SPINDLE PWM
+	loadrt abs count=1
+	loadrt scale count=1
+	loadrt mux2 count=1
+	addf abs.0 servo-thread
+	addf scale.0 servo-thread
+	addf mux2.0 servo-thread
+	#
+	setp scale.0.gain 0.1 #this will make m3 s1000 give 100% output and m3 s100 10%
+	#	signal		source		destination
+	net spindle-speed-scale motion.analog-out-00 => scale.0.in
+	net spindle-speed-abs scale.0.out => abs.0.in
+	#pre-Mux2 output control... net laser-pwm-out abs.0.out  => remora.SP.0
+	net laser-prog-is-running halui.program.is-running => mux2.0.sel
+	net laser-mux-abs-in1 abs.0.out => mux2.0.in1
+	net laser-mux-zero-in0 mux2.0.in0
+	sets laser-mux-zero-in0 0.0
+	net laser-pwm-out mux2.0.out  => remora.SP.0
+	
+#spindle direction control
+	net spindle-cw <= spindle.0.forward
+	net spindle-cw => remora.output.0
+
+
+# outputs
+	#net coolant-flood <= iocontrol.0.coolant-flood
+	#net coolant-flood   => remora.output.6
+	#net dout-00 <= motion.digital-out-00
+	#net dout-00         => remora.output.5
+	#net dout-03 <= motion.digital-out-03
+	#net dout-03         => remora.output.0
+
