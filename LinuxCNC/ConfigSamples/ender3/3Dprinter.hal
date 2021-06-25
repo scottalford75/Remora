@@ -15,33 +15,42 @@
 
 # end-stops
 
-	net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
-	#net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
-	net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
-	#net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
-	net Z-min 	remora.input.4 	=> joint.2.home-sw-in joint.2.neg-lim-sw-in
-	#net Z-max 	remora.input.5 	=> joint.2.home-lim-sw-in
+	# FOR SKR V1.4
+	net X-stop 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	net Y-stop 	remora.input.1 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	net Z-stop 	remora.input.2 	=> joint.2.home-sw-in joint.2.neg-lim-sw-in
+	#net E0DET 	remora.input.3 	=> joint.0.pos-lim-sw-in
+	#net E1DET 	remora.input.4 	=> joint.1.pos-lim-sw-in
+	#net PWRDET 	remora.input.5 	=> joint.2.home-lim-sw-in
+	# FOR MSK SBASAE V1.3
+	#net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	##net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
+	#net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	##net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
+	#net Z-min 	remora.input.4 	=> joint.2.home-sw-in joint.2.neg-lim-sw-in
+	##net Z-max 	remora.input.5 	=> joint.2.home-lim-sw-in
 
 
 # remora command outputs
 
-	net bed-heater-SP 		=> remora.SP.0
+	net bed-heater-SP 	=> remora.SP.0
 	net ext0-heater-SP  	=> remora.SP.1
 	net ext0-cooling-SP 	=> remora.SP.2
-	net BLtouch-SP 			=> remora.SP.3
+	net BLtouch-SP 		=> remora.SP.3
 
 
 # remora command feedbacks
 
-	net bed-PV 			=> remora.PV.0
+	net bed-PV 		=> remora.PV.0
 	net ext0-PV 		=> remora.PV.1
+	net ext1-PV 		=> remora.PV.2
 
 
 ## Bed PID configuration
 
 	net remora-status 	=> PID-bed.auto
-	net bed-SP 			=> PID-bed.SP
-	net bed-PV 			=> PID-bed.PV
+	net bed-SP 		=> PID-bed.SP
+	net bed-PV 		=> PID-bed.PV
 	net bed-heater-SP 	=> PID-bed.CV
 
 	setp PID-bed.pOnM 	[BED]PID_PONM
