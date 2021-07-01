@@ -38,4 +38,4 @@ void Module::runModule()
 
 void Module::update(){}
 void Module::slowUpdate(){}
-
+void Module::configure(){}

@@ -49,6 +49,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "modules/pwm/pwm.h"
 #include "modules/pwm/hardwarePwm.h"
 #include "modules/temperature/temperature.h"
+#include "modules/tmcStepper/tmcStepper.h"
 #include "modules/rcservo/rcservo.h"
 #include "modules/switch/switch.h"
 #include "modules/eStop/eStop.h"
@@ -104,6 +105,7 @@ bool threadsRunning = false;
 // pointers to objects with global scope
 pruThread* servoThread;
 pruThread* baseThread;
+pruThread* commsThread;
 MODDMA_Config* spiDMArx1 = NULL;
 MODDMA_Config* spiDMArx2 = NULL;
 MODDMA_Config* spiDMAtx1 = NULL;
@@ -153,6 +155,17 @@ void TIMER1_IRQHandler(void)
 
     Interrupt::TIMER1_Wrapper();
 }
+
+
+void TIMER2_IRQHandler(void)
+{
+    // Servo thread interrupt handler
+    unsigned int isrMask = LPC_TIM2->IR;
+    LPC_TIM2->IR = isrMask; /* Clear the Interrupt Bit */
+
+    Interrupt::TIMER2_Wrapper();
+}
+
 
 void QEI_IRQHandler(void)
 {
@@ -446,11 +459,15 @@ void setup()
     NVIC_SetVector(TIMER1_IRQn, (uint32_t)TIMER1_IRQHandler);
     NVIC_SetPriority(TIMER1_IRQn, 3);
 
+    commsThread = new pruThread(LPC_TIM2, TIMER2_IRQn, PRU_COMMSFREQ);
+    NVIC_SetVector(TIMER2_IRQn, (uint32_t)TIMER2_IRQHandler);
+    NVIC_SetPriority(TIMER2_IRQn, 4);
+
     // Other interrupt sources
 
     // for QEI modudule
     NVIC_SetVector(QEI_IRQn, (uint32_t)QEI_IRQHandler);
-    NVIC_SetPriority(QEI_IRQn, 4);
+    NVIC_SetPriority(QEI_IRQn, 5);
 }
 
 
@@ -841,6 +858,72 @@ void loadModules()
                 Module* digipot = new MCP4451(sda, scl, address, maxCurrent, factor, c0, c1, c2, c3);
                 digipot->update();
                 delete digipot;
+            }
+            else if (!strcmp(type,"TMC stepper"))
+            {
+                printf("Make TMC");
+
+                const char* driver = module["Driver"];
+                printf("%s\n", driver);
+
+                const char* comment = module["Comment"];
+                printf("%s\n",comment);
+
+                const char* RxPin = module["RX pin"];
+                float RSense = module["RSense"];
+                uint8_t address = module["Address"];
+                uint16_t current = module["Current"];
+                uint16_t microsteps = module["Microsteps"];
+                const char* stealth = module["Stealth chop"];
+                uint16_t stall = module["Stall sensitivity"];
+
+                bool stealthchop;
+
+                if (!strcmp(stealth, "on"))
+                {
+                    stealthchop = true;
+                }
+                else
+                {
+                    stealthchop = false;   
+                }
+
+                printf("%s\n", driver);
+
+                if (!strcmp(driver, "2208"))
+                {
+                    // SW Serial pin, RSense, mA, microsteps, stealh
+                    // TMC2208(std::string, float, uint8_t, uint16_t, uint16_t, bool);
+                    Module* tmc = new TMC2208(RxPin, RSense, current, microsteps, stealthchop);
+                
+                    printf("\nStarting the COMMS thread\n");
+                    commsThread->startThread();
+                    commsThread->registerModule(tmc);
+                    
+                    tmc->configure();
+
+                    printf("\nStopping the COMMS thread\n");
+                    commsThread->stopThread();
+                    commsThread->unregisterModule(tmc);
+                    delete tmc;
+                }
+                else if (!strcmp(driver, "2209"))
+                {
+                    // SW Serial pin, RSense, addr, mA, microsteps, stealh, stall
+                    // TMC2209(std::string, float, uint8_t, uint16_t, uint16_t, bool, uint16_t);
+                    Module* tmc = new TMC2209(RxPin, RSense, address, current, microsteps, stealthchop, stall);
+                
+                    printf("\nStarting the COMMS thread\n");
+                    commsThread->startThread();
+                    commsThread->registerModule(tmc);
+                    
+                    tmc->configure();
+
+                    printf("\nStopping the COMMS thread\n");
+                    commsThread->stopThread();
+                    commsThread->unregisterModule(tmc);
+                    delete tmc;
+                }
             }
         }
     }

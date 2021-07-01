@@ -31,7 +31,9 @@ class pruThread
 		pruThread(LPC_TIM_TypeDef* timer, IRQn_Type irq, uint32_t frequency);
 
 		void registerModule(Module *module);
+        void unregisterModule(Module *module);
 		void startThread(void);
+        void stopThread(void);
 		void run(void);
 };
 

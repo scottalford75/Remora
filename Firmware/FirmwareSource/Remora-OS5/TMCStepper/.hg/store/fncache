@@ -1,0 +1,12 @@
+data/DRV_STATUS.cpp.i
+data/TMC_MACROS.h.i
+data/TMCStepper.cpp.i
+data/TMC2208Stepper.cpp.i
+data/GCONF.cpp.i
+data/IHOLD_IRUN.cpp.i
+data/TMC2209_bitfields.h.i
+data/TMCStepper.h.i
+data/TMC2208_bitfields.h.i
+data/CHOPCONF.cpp.i
+data/TMC2209Stepper.cpp.i
+data/PWMCONF.cpp.i

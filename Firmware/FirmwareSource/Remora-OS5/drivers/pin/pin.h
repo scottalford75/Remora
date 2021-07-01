@@ -38,6 +38,8 @@ class Pin
         PwmOut* hardware_pwm();
 
         void configPin();
+        void setAsOutput();
+        void setAsInput();
         void as_open_drain();
         void pull_none();
         void pull_up();

@@ -101,6 +101,16 @@ void Pin::configPin()
     }
 }
 
+void Pin::setAsOutput()
+{
+    this->port->FIODIR |= 1<<this->pin;
+}
+
+
+void Pin::setAsInput()
+{
+    this->port->FIODIR &= ~(1<<this->pin);
+}
 
 // Configure this pin as OD
 void Pin::as_open_drain(){

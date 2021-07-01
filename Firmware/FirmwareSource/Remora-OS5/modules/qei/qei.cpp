@@ -63,8 +63,6 @@ uint32_t QEI::getPosition()
 void QEI::update()
 {
     this->count = getPosition();
-    *(this->ptrEncoderCount) = this->count; 
-
 
     if (this->hasIndex)                                     // we have an index pin
     {
