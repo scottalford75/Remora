@@ -59,20 +59,11 @@
 	{
 	"Thread": "Base",
 	"Type": "Stepgen",
-		"Comment":			"E0 - Joint 3 step generator",
+		"Comment":			"E - Joint 3 step generator",
 		"Joint Number":		3,
 		"Step Pin": 		"2.3",
 		"Direction Pin": 	"0.22",
 		"Enable Pin": 		"0.21"
-	},
-	{
-	"Thread": "Base",
-	"Type": "Stepgen",
-		"Comment":			"E1 - Joint 4 step generator",
-		"Joint Number":		4,
-		"Step Pin": 		"2.8",
-		"Direction Pin": 	"2.13",
-		"Enable Pin": 		"4.29"
 	},
 	{
 	"Thread": "Servo",
