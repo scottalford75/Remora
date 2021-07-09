@@ -179,7 +179,7 @@
 	{
 	"Thread": "Servo",
 	"Type": "Switch",
-		"Comment":			"Extruder fan PWM on Heater2",
+		"Comment":			"Extruder fan switch on E2",
 		"Pin":				"2.6",
 		"Mode":				"On",
 		"PV[i]":			1,
