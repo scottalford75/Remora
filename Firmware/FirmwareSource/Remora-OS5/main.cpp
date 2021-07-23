@@ -659,11 +659,12 @@ void loadModules()
     
                 const char* pin = module["Pin"];
                 const char* mode = module["Mode"];
-                bool invert = module["Invert"];
+                const char* invert = module["Invert"];
                 const char* modifier = module["Modifier"];
                 int dataBit = module["Data Bit"];
 
                 int mod;
+                bool inv;
 
                 if (!strcmp(modifier,"Open Drain"))
                 {
@@ -686,6 +687,12 @@ void loadModules()
                     mod = NONE;
                 }
 
+                if (!strcmp(invert,"True"))
+                {
+                    inv = true;
+                }
+                else inv = false;
+
                 ptrOutputs = &rxData.outputs;
                 ptrInputs = &txData.inputs;
     
@@ -694,13 +701,13 @@ void loadModules()
                 if (!strcmp(mode,"Output"))
                 {
                     //Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert, mod);
+                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, inv, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else if (!strcmp(mode,"Input"))
                 {
                     //Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert, mod);
+                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, inv, mod);
                     servoThread->registerModule(digitalPin);
                 }
                 else
