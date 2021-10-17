@@ -35,7 +35,9 @@ void PWM::update()
 	// update the speed SP
 	this->SP = *(this->ptrSP);
 
+    // ensure SP is within range. LinuxCNC PID can have -ve command value
 	if (this->SP > 100) this->SP = 100;
+    if (this->SP < 0) this->SP = 0;
 
 	// the SP is as a percentage (%)
 	// scale the pwm output range (0 - pwmMax) = (0 - 100%)
