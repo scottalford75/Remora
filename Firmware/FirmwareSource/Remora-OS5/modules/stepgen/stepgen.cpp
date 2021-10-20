@@ -2,9 +2,33 @@
 
 
 /***********************************************************************
-*                METHOD DEFINITIONS                                    *
+                MODULE CONFIGURATION AND CREATION FROM JSON     
 ************************************************************************/
 
+void createStepgen()
+{
+    const char* comment = module["Comment"];
+    printf("%s\n",comment);
+
+    int joint = module["Joint Number"];
+    const char* enable = module["Enable Pin"];
+    const char* step = module["Step Pin"];
+    const char* dir = module["Direction Pin"];
+
+    // configure pointers to data source and feedback location
+    ptrJointFreqCmd[joint] = &rxData.jointFreqCmd[joint];
+    ptrJointFeedback[joint] = &txData.jointFeedback[joint];
+    ptrJointEnable = &rxData.jointEnable;
+
+    // create the step generator, register it in the thread
+    Module* stepgen = new Stepgen(PRU_BASEFREQ, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
+    baseThread->registerModule(stepgen);
+}
+
+
+/***********************************************************************
+                METHOD DEFINITIONS
+************************************************************************/
 
 Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::string step, std::string direction, int stepBit, volatile int32_t &ptrFrequencyCommand, volatile int32_t &ptrFeedback, volatile uint8_t &ptrJointEnable) :
 	jointNumber(jointNumber),

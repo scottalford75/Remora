@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "FastAnalogIn.h"
 #include "sensors/tempSensor.h"
 #include "drivers/pin/pin.h"
 
@@ -16,7 +15,7 @@ class Thermistor : public TempSensor
 
 		std::string pin;
 
-		FastAnalogIn *adc;
+        AnalogIn *adc;
 
 		float temperatureMax, temperatureMin;
 		bool useSteinhartHart;

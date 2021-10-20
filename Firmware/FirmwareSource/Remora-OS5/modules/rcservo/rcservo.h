@@ -3,10 +3,14 @@
 
 #include <cstdint>
 #include <string>
-#include <iostream>
+//#include <iostream>
 
 #include "modules/module.h"
 #include "drivers/pin/pin.h"
+
+#include "extern.h"
+
+void createRCServo(void);
 
 class RCServo : public Module
 {

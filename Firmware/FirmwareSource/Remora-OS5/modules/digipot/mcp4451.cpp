@@ -1,5 +1,33 @@
 #include "mcp4451.h"
 
+/***********************************************************************
+                MODULE CONFIGURATION AND CREATION FROM JSON     
+************************************************************************/
+void createMCP4451()
+{
+    printf("Make MCP4451 Digipot object\n");
+
+    const char* sda = module["I2C SDA pin"];
+    const char* scl = module["I2C SCL pin"];
+    int address = module["I2C address"];
+    float maxCurrent = module["Max current"];
+    float factor = module["Factor"];
+    float c0 = module["Current 0"];
+    float c1 = module["Current 1"];
+    float c2 = module["Current 2"];
+    float c3 = module["Current 3"];
+
+    Module* digipot = new MCP4451(sda, scl, address, maxCurrent, factor, c0, c1, c2, c3);
+    digipot->update();
+    delete digipot;
+}
+
+
+/***********************************************************************
+                METHOD DEFINITIONS
+************************************************************************/
+
+
 MCP4451::MCP4451(std::string sda, std::string scl, char address, float maxCurrent, float factor, float c0, float c1, float c2, float c3) :
   sda(sda),
   scl(scl),

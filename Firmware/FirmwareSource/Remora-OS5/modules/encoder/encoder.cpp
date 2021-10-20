@@ -1,58 +1,64 @@
 #include "encoder.h"
 
+/***********************************************************************
+                MODULE CONFIGURATION AND CREATION FROM JSON     
+************************************************************************/
+void createEncoder()
+{
+    const char* comment = module["Comment"];
+    printf("%s\n",comment);
+
+    int pv = module["PV[i]"];
+    const char* pinA = module["ChA Pin"];
+    const char* pinB = module["ChB Pin"];
+    const char* pinI = module["Index Pin"];
+    int dataBit = module["Data Bit"];
+    const char* modifier = module["Modifier"];
+
+    printf("Creating Quadrature Encoder at pins %s and %s\n", pinA, pinB);
+
+    int mod;
+
+    if (!strcmp(modifier,"Open Drain"))
+    {
+        mod = OPENDRAIN;
+    }
+    else if (!strcmp(modifier,"Pull Up"))
+    {
+        mod = PULLUP;
+    }
+    else if (!strcmp(modifier,"Pull Down"))
+    {
+        mod = PULLDOWN;
+    }
+    else if (!strcmp(modifier,"Pull None"))
+    {
+        mod = PULLNONE;
+    }
+    else
+    {
+        mod = NONE;
+    }
+    
+    ptrProcessVariable[pv]  = &txData.processVariable[pv];
+    ptrInputs = &txData.inputs;
+
+    if (pinI == nullptr)
+    {
+        Module* encoder = new Encoder(*ptrProcessVariable[pv], pinA, pinB, mod);
+        baseThread->registerModule(encoder);
+    }
+    else
+    {
+        printf("  Encoder has index at pin %s\n", pinI);
+        Module* encoder = new Encoder(*ptrProcessVariable[pv], *ptrInputs, dataBit, pinA, pinB, pinI, mod);
+        baseThread->registerModule(encoder);
+    }
+}
 
 /***********************************************************************
 *                METHOD DEFINITIONS                                    *
 ************************************************************************/
-
-// credit to https://github.com/PaulStoffregen/Encoder/blob/master/Encoder.h
-
-//                           _______         _______       
-//               PinA ______|       |_______|       |______ PinA
-// negative <---         _______         _______         __      --> positive
-//               PinB __|       |_______|       |_______|   PinB
-
-		//	new	new	old	old
-		//	pinB	pinA	pinB	pinA	Result
-		//	----	----	----	----	------
-		//	0	0	0	0	no movement
-		//	0	0	0	1	+1
-		//	0	0	1	0	-1
-		//	0	0	1	1	+2  (assume pinA edges only)
-		//	0	1	0	0	-1
-		//	0	1	0	1	no movement
-		//	0	1	1	0	-2  (assume pinA edges only)
-		//	0	1	1	1	+1
-		//	1	0	0	0	+1
-		//	1	0	0	1	-2  (assume pinA edges only)
-		//	1	0	1	0	no movement
-		//	1	0	1	1	-1
-		//	1	1	0	0	+2  (assume pinA edges only)
-		//	1	1	0	1	-1
-		//	1	1	1	0	+1
-		//	1	1	1	1	no movement
-/*
-	// Simple, easy-to-read "documentation" version :-)
-	//
-	void update(void) {
-		uint8_t s = state & 3;
-		if (digitalRead(pinA)) s |= 4;
-		if (digitalRead(pinB)) s |= 8;
-		switch (s) {
-			case 0: case 5: case 10: case 15:
-				break;
-			case 1: case 7: case 8: case 14:
-				position++; break;
-			case 2: case 4: case 11: case 13:
-				position--; break;
-			case 3: case 12:
-				position += 2; break;
-			default:
-				position -= 2; break;
-		}
-		state = (s >> 2);
-	}
-*/
 
 Encoder::Encoder(volatile float &ptrEncoderCount, std::string ChA, std::string ChB, int modifier) :
 	ptrEncoderCount(&ptrEncoderCount),
@@ -134,3 +140,52 @@ void Encoder::update()
     }
 }
 
+
+// credit to https://github.com/PaulStoffregen/Encoder/blob/master/Encoder.h
+
+//                           _______         _______       
+//               PinA ______|       |_______|       |______ PinA
+// negative <---         _______         _______         __      --> positive
+//               PinB __|       |_______|       |_______|   PinB
+
+		//	new	new	old	old
+		//	pinB	pinA	pinB	pinA	Result
+		//	----	----	----	----	------
+		//	0	0	0	0	no movement
+		//	0	0	0	1	+1
+		//	0	0	1	0	-1
+		//	0	0	1	1	+2  (assume pinA edges only)
+		//	0	1	0	0	-1
+		//	0	1	0	1	no movement
+		//	0	1	1	0	-2  (assume pinA edges only)
+		//	0	1	1	1	+1
+		//	1	0	0	0	+1
+		//	1	0	0	1	-2  (assume pinA edges only)
+		//	1	0	1	0	no movement
+		//	1	0	1	1	-1
+		//	1	1	0	0	+2  (assume pinA edges only)
+		//	1	1	0	1	-1
+		//	1	1	1	0	+1
+		//	1	1	1	1	no movement
+/*
+	// Simple, easy-to-read "documentation" version :-)
+	//
+	void update(void) {
+		uint8_t s = state & 3;
+		if (digitalRead(pinA)) s |= 4;
+		if (digitalRead(pinB)) s |= 8;
+		switch (s) {
+			case 0: case 5: case 10: case 15:
+				break;
+			case 1: case 7: case 8: case 14:
+				position++; break;
+			case 2: case 4: case 11: case 13:
+				position--; break;
+			case 3: case 12:
+				position += 2; break;
+			default:
+				position -= 2; break;
+		}
+		state = (s >> 2);
+	}
+*/

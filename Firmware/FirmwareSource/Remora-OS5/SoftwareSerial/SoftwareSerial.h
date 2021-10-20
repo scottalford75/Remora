@@ -1,12 +1,12 @@
 #ifndef SOFTWARESERIAL_H
 #define SOFTWARESERIAL_H
 
-#include "LPC17xx.h"
+//#include "LPC17xx.h"
 #include "mbed.h"
 #include <cstdint>
 #include <string>
-#include "../configuration.h"
-#include "../pin/pin.h"
+#include "configuration.h"
+#include "pin.h"
 
 
 #define FORCE_BAUD_RATE 19600 //9600
