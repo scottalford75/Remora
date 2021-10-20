@@ -1,5 +1,28 @@
 #include "resetPin.h"
 
+/***********************************************************************
+                MODULE CONFIGURATION AND CREATION FROM JSON     
+************************************************************************/
+
+void createResetPin()
+{
+    const char* comment = module["Comment"];
+    printf("%s\n",comment);
+
+    const char* pin = module["Pin"];
+
+    ptrPRUreset = &PRUreset;
+
+    printf("Make Reset Pin at pin %s\n", pin);
+
+    Module* resetPin = new ResetPin(*ptrPRUreset, pin);
+    servoThread->registerModule(resetPin);
+}
+
+
+/***********************************************************************
+                METHOD DEFINITIONS
+************************************************************************/
 
 ResetPin::ResetPin(volatile bool &ptrReset, std::string portAndPin) :
 	ptrReset(&ptrReset),

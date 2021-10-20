@@ -1,5 +1,26 @@
 #include "rcservo.h"
 
+/***********************************************************************
+                MODULE CONFIGURATION AND CREATION FROM JSON     
+************************************************************************/
+
+void createRCServo()
+{
+    const char* comment = module["Comment"];
+    printf("%s\n",comment);
+
+    int sp = module["SP[i]"];
+    const char* pin = module["Servo Pin"];
+
+    printf("Make RC Servo at pin %s\n", pin);
+    
+    ptrSetPoint[sp] = &rxData.setPoint[sp];
+
+    // slow module with 10 hz update
+    int updateHz = 10;
+    Module* rcservo = new RCServo(*ptrSetPoint[sp], pin, PRU_BASEFREQ, updateHz);
+    baseThread->registerModule(rcservo);
+}
 
 /***********************************************************************
 *                METHOD DEFINITIONS                                    *
@@ -12,7 +33,8 @@ RCServo::RCServo(volatile float &ptrPositionCmd, std::string pin, int32_t thread
 	pin(pin),
 	threadFreq(threadFreq)
 {
-	cout << "Creating RC servo at pin " << this->pin << endl;
+    printf("Creating RC servo\n");
+	//cout << "Creating RC servo at pin " << this->pin << endl;
 
 	this->servoPin = new Pin(this->pin, OUTPUT);			// create Pin
 

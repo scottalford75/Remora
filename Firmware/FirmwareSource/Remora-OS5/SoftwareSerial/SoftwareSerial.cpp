@@ -56,8 +56,9 @@ void SoftwareSerial::setTX(void)
     // output hihg. Now, it is input with pullup for a short while, which
     // is fine. With inverse logic, either order is fine.
 
-    this->txpin->set(1);
+    //this->txpin->set(1);                  // works for LPC1768 but not STM32
     this->txpin->setAsOutput();
+    this->txpin->set(1);
 }
 
 void SoftwareSerial::setRX(void)

@@ -4,8 +4,13 @@
 #include "mbed.h"
 #include <string>
 
-#include "modules/module.h"
-#include "drivers/pin/pin.h"
+#include "module.h"
+#include "pin.h"
+
+#include "extern.h"
+
+
+void createMCP4451(void);
 
 class MCP4451 : public Module
 {

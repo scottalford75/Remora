@@ -6,6 +6,9 @@
 #include "modules/module.h"
 #include "drivers/pin/pin.h"
 
+#include "extern.h"
+
+void createResetPin(void);
 
 class ResetPin : public Module
 {

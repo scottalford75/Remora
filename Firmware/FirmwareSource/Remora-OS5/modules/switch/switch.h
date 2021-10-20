@@ -2,12 +2,15 @@
 #define SWITCH_H
 
 #include <cstdint>
-#include <iostream>
+//#include <iostream>
 #include <string>
 
 #include "modules/module.h"
 #include "drivers/pin/pin.h"
 
+#include "extern.h"
+
+void createSwitch(void);
 
 class Switch : public Module
 {

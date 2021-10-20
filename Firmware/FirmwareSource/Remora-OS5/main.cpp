@@ -1,6 +1,6 @@
 
 /*
-Remora PRU "Smoothieboard" firmware for LinuxCNC
+Remora PRU firmware for LinuxCNC
 Copyright (C) 2021  Scott Alford (scotta)
 
 This program is free software; you can redistribute it and/or
@@ -22,59 +22,49 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cstdio>
 #include <cerrno>
 #include <string> 
-#include "SDBlockDevice.h"
 #include "FATFileSystem.h"
-#include "MODDMA.h"
-#include "FastAnalogIn.h"
- 
-// Local includes
+
+#if defined TARGET_LPC176X
+#include "SDBlockDevice.h"
+#elif defined TARGET_STM32F4
+#include "SDIOBlockDevice.h"
+#endif
+
 #include "configuration.h"
 #include "remora.h"
 
-#include "lib/ArduinoJson6/ArduinoJson.h"
+// libraries
+#include "ArduinoJson.h"
 
-#include "drivers/pin/pin.h"
-#include "drivers/softPwm/softPwm.h"
+// drivers
+#include "RemoraComms.h"
+#include "pin.h"
+#include "softPwm.h"
 
-#include "thread/pruThread.h"
-#include "thread/interrupt.h"
+// threads
+#include "irqHandlers.h"
+#include "interrupt.h"
+#include "pruThread.h"
+#include "createThreads.h"
 
-#include "modules/module.h"
-#include "modules/resetPin/resetPin.h"
-#include "modules/digipot/mcp4451.h"
-#include "modules/stepgen/stepgen.h"
-#include "modules/blink/blink.h"
-#include "modules/digitalPin/digitalPin.h"
-#include "modules/encoder/encoder.h"
-#include "modules/pwm/pwm.h"
-#include "modules/pwm/hardwarePwm.h"
-#include "modules/temperature/temperature.h"
-#include "modules/tmcStepper/tmcStepper.h"
-#include "modules/rcservo/rcservo.h"
-#include "modules/switch/switch.h"
-#include "modules/eStop/eStop.h"
-#include "modules/qei/qei.h"
-
-#include "sensors/thermistor/thermistor.h"
-
-
-SDBlockDevice blockDevice(MOSI1, MISO1, SCK1, SSEL1);  // mosi, miso, sclk, cs
-FATFileSystem fileSystem("fs");
-
-// SPI slave - RPi is the SPI master
-SPISlave spiSlave(MOSI0, MISO0, SCK0, SSEL0);
-
-// DMA controller
-MODDMA dma;
-
-// Watchdog
-Watchdog& watchdog = Watchdog::get_instance();
-
-// Json configuration file stuff
-FILE *jsonFile;
-string strJson;
-DynamicJsonDocument doc(JSON_BUFF_SIZE);
-
+// modules
+#include "module.h"
+#include "blink.h"
+#include "debug.h"
+#include "digitalPin.h"
+#include "encoder.h"
+#include "eStop.h"
+#include "hardwarePwm.h"
+#include "mcp4451.h"
+#include "motorPower.h"
+#include "pwm.h"
+#include "rcservo.h"
+#include "resetPin.h"
+#include "stepgen.h"
+#include "switch.h"
+#include "temperature.h"
+#include "tmc.h"
+#include "qei.h"
 
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
@@ -92,27 +82,16 @@ enum State {
 };
 
 uint8_t resetCnt;
-volatile uint8_t rejectCnt;
 
 // boolean
-static volatile bool SPIdata;
-static volatile bool SPIdataError;
-static volatile bool PRUreset;
+volatile bool PRUreset;
 bool configError = false;
 bool threadsRunning = false;
-
 
 // pointers to objects with global scope
 pruThread* servoThread;
 pruThread* baseThread;
 pruThread* commsThread;
-MODDMA_Config* spiDMArx1 = NULL;
-MODDMA_Config* spiDMArx2 = NULL;
-MODDMA_Config* spiDMAtx1 = NULL;
-MODDMA_Config* spiDMAtx2 = NULL;
-MODDMA_Config* spiDMAmemcpy1 = NULL;
-MODDMA_Config* spiDMAmemcpy2 = NULL;
-
 
 // unions for RX and TX data
 volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moveing it to rxData
@@ -121,6 +100,8 @@ volatile rxData_t rxData;
 volatile txData_t txData;
 
 // pointers to data
+volatile rxData_t*  ptrRxData = &rxData;
+volatile txData_t*  ptrTxData = &txData;
 volatile int32_t* ptrTxHeader;  
 volatile bool*    ptrPRUreset;
 volatile int32_t* ptrJointFreqCmd[JOINTS];
@@ -133,260 +114,40 @@ volatile uint8_t* ptrOutputs;
 
 
 /***********************************************************************
+        OBJECTS etc                                           
+************************************************************************/
+
+// SD card access and Remora communication protocol
+#if defined TARGET_SKRV1_4
+    SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData);
+
+#elif defined TARGET_SKRV2
+    SDIOBlockDevice blockDevice;
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#endif
+
+// Watchdog
+Watchdog& watchdog = Watchdog::get_instance();
+
+// Json configuration file stuff
+FATFileSystem fileSystem("fs");
+FILE *jsonFile;
+string strJson;
+DynamicJsonDocument doc(JSON_BUFF_SIZE);
+JsonObject module;
+
+/***********************************************************************
         INTERRUPT HANDLERS - add NVIC_SetVector etc to setup()
 ************************************************************************/
 
-
-void TIMER0_IRQHandler()
-{
-    // Base thread interrupt handler
-    unsigned int isrMask = LPC_TIM0->IR;
-    LPC_TIM0->IR = isrMask; /* Clear the Interrupt Bit */
-
-    Interrupt::TIMER0_Wrapper();
-}
+// Add these to /thread/irqHandlers.h in the TARGET_target
 
 
-void TIMER1_IRQHandler(void)
-{
-    // Servo thread interrupt handler
-    unsigned int isrMask = LPC_TIM1->IR;
-    LPC_TIM1->IR = isrMask; /* Clear the Interrupt Bit */
-
-    Interrupt::TIMER1_Wrapper();
-}
-
-
-void TIMER2_IRQHandler(void)
-{
-    // Servo thread interrupt handler
-    unsigned int isrMask = LPC_TIM2->IR;
-    LPC_TIM2->IR = isrMask; /* Clear the Interrupt Bit */
-
-    Interrupt::TIMER2_Wrapper();
-}
-
-
-void QEI_IRQHandler(void)
-{
-    // QEI (quatrature encoder interface) index interrupt handler
-    LPC_QEI->QEICLR = ((uint32_t)(1<<0));   
-    Interrupt:: QEI_Wrapper();
-}
-
-void tc0_callback ()
-{
-    // SPI Tx
-    MODDMA_Config *config = dma.getConfig();
-    dma.Disable( (MODDMA::CHANNELS)config->channelNum() );
-
-    // Clear DMA IRQ flags.
-    if (dma.irqType() == MODDMA::TcIrq) dma.clearTcIrq();
-    if (dma.irqType() == MODDMA::ErrIrq) dma.clearErrIrq();
-
-    dma.Prepare( spiDMAtx2 );
-}
-
-void tc1_callback ()
-{
-    // SPI Tx
-    MODDMA_Config *config = dma.getConfig();
-    dma.Disable( (MODDMA::CHANNELS)config->channelNum() );
-
-    // Clear DMA IRQ flags.
-    if (dma.irqType() == MODDMA::TcIrq) dma.clearTcIrq();
-    if (dma.irqType() == MODDMA::ErrIrq) dma.clearErrIrq();
-
-    dma.Prepare( spiDMAtx1 );
-}
-
-void tc2_callback ()
-{
-    // SPI Rx
-    MODDMA_Config *config = dma.getConfig();
-    dma.Disable( (MODDMA::CHANNELS)config->channelNum() );
-
-    SPIdata = false;
-    SPIdataError = false;
-
-    // Clear DMA IRQ flags.
-    if (dma.irqType() == MODDMA::TcIrq) dma.clearTcIrq();
-    if (dma.irqType() == MODDMA::ErrIrq) dma.clearErrIrq();
-
-    // Check and move the recieved SPI data payload
-    switch (spiRxBuffer1.header)
-    {
-      case PRU_READ:
-        SPIdata = true;
-        rejectCnt = 0;
-        dma.Disable( spiDMAmemcpy2->channelNum()  );
-        break;
-
-      case PRU_WRITE:
-        SPIdata = true;
-        rejectCnt = 0;
-        dma.Prepare( spiDMAmemcpy1 );
-        break;
-
-      default:
-        rejectCnt++;
-        if (rejectCnt > 5)
-        {
-            SPIdataError = true;
-        }
-        dma.Disable( spiDMAmemcpy2->channelNum()  );
-    }
-
-    // swap Rx buffers
-    dma.Prepare( spiDMArx2 );
-}
-
-void tc3_callback ()
-{
-    // SPI Rx
-    MODDMA_Config *config = dma.getConfig();
-    dma.Disable( (MODDMA::CHANNELS)config->channelNum() );
-
-    SPIdata = false;
-    SPIdataError = false;
-
-    // Clear DMA IRQ flags.
-    if (dma.irqType() == MODDMA::TcIrq) dma.clearTcIrq();
-    if (dma.irqType() == MODDMA::ErrIrq) dma.clearErrIrq();
-
-    // Check and move the recieved SPI data payload
-    switch (spiRxBuffer2.header)
-    {
-      case PRU_READ:
-        SPIdata = true;
-        rejectCnt = 0;
-        dma.Disable( spiDMAmemcpy1->channelNum()  );
-        break;
-
-      case PRU_WRITE:
-        SPIdata = true;
-        rejectCnt = 0;
-        dma.Prepare( spiDMAmemcpy2 );
-        break;
-
-      default:
-        rejectCnt++;
-        if (rejectCnt > 5)
-        {
-            SPIdataError = true;
-        }
-        dma.Disable( spiDMAmemcpy1->channelNum()  );
-    }
-
-    // swap Rx buffers
-    dma.Prepare( spiDMArx1 );
-}
-
-void err_callback () {
-    cout << "err\r\n" << endl;
-}
-
-void DMAsetup()
-{
-    // Create MODDMA configuration objects for the SPI transfer and memory copy
-    spiDMAmemcpy1 = new MODDMA_Config;
-    spiDMAmemcpy2 = new MODDMA_Config;
-    spiDMAtx1 = new MODDMA_Config;
-    spiDMAtx2 = new MODDMA_Config;
-    spiDMArx1 = new MODDMA_Config;
-    spiDMArx2 = new MODDMA_Config;
-
-    // Setup DMA configurations
-    spiDMAtx1
-     ->channelNum    ( MODDMA::Channel_0 )
-     ->srcMemAddr    ( (uint32_t) &txData )
-     ->dstMemAddr    ( 0 )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::m2p )
-     ->srcConn       ( 0 )
-     ->dstConn       ( MODDMA::SSP0_Tx )
-     ->attach_tc     ( &tc0_callback )
-     ->attach_err    ( &err_callback )
-    ;
-
-    spiDMAtx2
-     ->channelNum    ( MODDMA::Channel_1 )
-     ->srcMemAddr    ( (uint32_t) &txData )
-     ->dstMemAddr    ( 0 )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::m2p )
-     ->srcConn       ( 0 )
-     ->dstConn       ( MODDMA::SSP0_Tx )
-     ->attach_tc     ( &tc1_callback )
-     ->attach_err    ( &err_callback )
-    ;
-
-    spiDMArx1
-     ->channelNum    ( MODDMA::Channel_2 )
-     ->srcMemAddr    ( 0 )
-     ->dstMemAddr    ( (uint32_t) &spiRxBuffer1 )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::p2m )
-     ->srcConn       ( MODDMA::SSP0_Rx )
-     ->dstConn       ( 0 )
-     ->attach_tc     ( &tc2_callback )
-     ->attach_err    ( &err_callback )
-    ;
-
-    spiDMArx2
-     ->channelNum    ( MODDMA::Channel_3 )
-     ->srcMemAddr    ( 0 )
-     ->dstMemAddr    ( (uint32_t) &spiRxBuffer2 )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::p2m )
-     ->srcConn       ( MODDMA::SSP0_Rx )
-     ->dstConn       ( 0 )
-     ->attach_tc     ( &tc3_callback )
-     ->attach_err    ( &err_callback )
-    ;
-
-    spiDMAmemcpy1
-     ->channelNum    ( MODDMA::Channel_4 )
-     ->srcMemAddr    ( (uint32_t) &spiRxBuffer1 )
-     ->dstMemAddr    ( (uint32_t) &rxData )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::m2m )
-    ;
-
-    spiDMAmemcpy2
-     ->channelNum    ( MODDMA::Channel_5 )
-     ->srcMemAddr    ( (uint32_t) &spiRxBuffer2 )
-     ->dstMemAddr    ( (uint32_t) &rxData )
-     ->transferSize  ( SPI_BUFF_SIZE )
-     ->transferType  ( MODDMA::m2m )
-    ;
-
-    // Pass the configurations to the controller
-    dma.Prepare( spiDMArx1 );
-    dma.Prepare( spiDMAtx1 );
-
-    // Enable SSP0 for DMA
-    LPC_SSP0->DMACR = 0;
-    LPC_SSP0->DMACR = (1<<1)|(1<<0); // TX,RX DMA Enable
-}
-
-void DMAreset()
-{
-    // disable and re-prepare DMA SPI transfers
-    printf("   Resetting DMA SPI transfers\n");
-    
-    // disable all transfers
-    dma.Disable( spiDMAmemcpy1->channelNum()  );
-    dma.Disable( spiDMAmemcpy2->channelNum()  );
-    dma.Disable( spiDMAtx1->channelNum()  );
-    dma.Disable( spiDMAtx2->channelNum()  );
-    dma.Disable( spiDMArx1->channelNum()  );
-    dma.Disable( spiDMArx2->channelNum()  );
-
-    // pass the configurations to the controller
-    dma.Prepare( spiDMArx1 );
-    dma.Prepare( spiDMAtx1 );
-}
+/***********************************************************************
+        ROUTINES
+************************************************************************/
 
 void readJsonConfig()
 {
@@ -435,39 +196,16 @@ void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
-    spiSlave.frequency(48000000);
+    #if defined TARGET_STM32F4
+    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F
+    blockDevice.deinit();
+    #endif
 
-    DMAsetup();
+    // initialise the Remora comms 
+    comms.init();
+    comms.start();
 
-    txData.header = PRU_DATA;
-
-
-    // Create the thread objects and set the interrupt vectors to RAM. This is needed
-    // as we are using the USB bootloader that requires a different code starting
-    // address. Also set interrupt priority with NVIC_SetPriority.
-    //
-    // Note: DMAC has highest priority, then Base thread and then Servo thread
-    //       to ensure SPI data transfer is reliable
-
-    NVIC_SetPriority(DMA_IRQn, 1);
-
-    baseThread = new pruThread(LPC_TIM0, TIMER0_IRQn, PRU_BASEFREQ);
-    NVIC_SetVector(TIMER0_IRQn, (uint32_t)TIMER0_IRQHandler);
-    NVIC_SetPriority(TIMER0_IRQn, 2);
-
-    servoThread = new pruThread(LPC_TIM1, TIMER1_IRQn, PRU_SERVOFREQ);
-    NVIC_SetVector(TIMER1_IRQn, (uint32_t)TIMER1_IRQHandler);
-    NVIC_SetPriority(TIMER1_IRQn, 3);
-
-    commsThread = new pruThread(LPC_TIM2, TIMER2_IRQn, PRU_COMMSFREQ);
-    NVIC_SetVector(TIMER2_IRQn, (uint32_t)TIMER2_IRQHandler);
-    NVIC_SetPriority(TIMER2_IRQn, 4);
-
-    // Other interrupt sources
-
-    // for QEI modudule
-    NVIC_SetVector(QEI_IRQn, (uint32_t)QEI_IRQHandler);
-    NVIC_SetPriority(QEI_IRQn, 5);
+    createThreads();
 }
 
 
@@ -503,12 +241,14 @@ void loadModules()
 
     if (configError) return;
 
+    printf("\n4. Loading modules\n");
+
     JsonArray Modules = doc["Modules"];
 
     // create objects from json data
     for (JsonArray::iterator it=Modules.begin(); it!=Modules.end(); ++it)
     {
-        JsonObject module = *it;
+        module = *it;
         
         const char* thread = module["Thread"];
         const char* type = module["Type"];
@@ -519,93 +259,15 @@ void loadModules()
 
             if (!strcmp(type,"Stepgen"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-
-                int joint = module["Joint Number"];
-                const char* enable = module["Enable Pin"];
-                const char* step = module["Step Pin"];
-                const char* dir = module["Direction Pin"];
-
-                // configure pointers to data source and feedback location
-                ptrJointFreqCmd[joint] = &rxData.jointFreqCmd[joint];
-                ptrJointFeedback[joint] = &txData.jointFeedback[joint];
-                ptrJointEnable = &rxData.jointEnable;
-
-                // create the step generator, register it in the thread
-                Module* stepgen = new Stepgen(PRU_BASEFREQ, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
-                baseThread->registerModule(stepgen);
+                createStepgen();
             }
             else if (!strcmp(type,"Encoder"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                int pv = module["PV[i]"];
-                const char* pinA = module["ChA Pin"];
-                const char* pinB = module["ChB Pin"];
-                const char* pinI = module["Index Pin"];
-                int dataBit = module["Data Bit"];
-                const char* modifier = module["Modifier"];
-            
-                printf("Creating Quadrature Encoder at pins %s and %s\n", pinA, pinB);
-
-                int mod;
-
-                if (!strcmp(modifier,"Open Drain"))
-                {
-                    mod = OPENDRAIN;
-                }
-                else if (!strcmp(modifier,"Pull Up"))
-                {
-                    mod = PULLUP;
-                }
-                else if (!strcmp(modifier,"Pull Down"))
-                {
-                    mod = PULLDOWN;
-                }
-                else if (!strcmp(modifier,"Pull None"))
-                {
-                    mod = PULLNONE;
-                }
-                else
-                {
-                    mod = NONE;
-                }
-                
-                ptrProcessVariable[pv]  = &txData.processVariable[pv];
-                ptrInputs = &txData.inputs;
-
-                if (pinI == nullptr)
-                {
-                    Module* encoder = new Encoder(*ptrProcessVariable[pv], pinA, pinB, mod);
-                    baseThread->registerModule(encoder);
-                }
-                else
-                {
-                    printf("  Encoder has index at pin %s\n", pinI);
-                    Module* encoder = new Encoder(*ptrProcessVariable[pv], *ptrInputs, dataBit, pinA, pinB, pinI, mod);
-                    baseThread->registerModule(encoder);
-                }
-
+                createEncoder();
             }
             else if (!strcmp(type,"RCServo"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                int sp = module["SP[i]"];
-                const char* pin = module["Servo Pin"];
-            
-                printf("Make RC Servo at pin %s\n", pin);
-                
-                ptrSetPoint[sp] = &rxData.setPoint[sp];
-
-                // slow module with 10 hz update
-                int updateHz = 10;
-                Module* rcservo = new RCServo(*ptrSetPoint[sp], pin, PRU_BASEFREQ, updateHz);
-                baseThread->registerModule(rcservo);
-
+                createRCServo();
             }
         }
         else if (!strcmp(thread,"Servo"))
@@ -614,336 +276,71 @@ void loadModules()
 
             if (!strcmp(type, "eStop"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                const char* pin = module["Pin"];
-            
-                ptrTxHeader = &txData.header;
-    
-                printf("Make eStop at pin %s\n", pin);
-
-                Module* estop = new eStop(*ptrTxHeader, pin);
-                servoThread->registerModule(estop);
-
+                createEStop();
             }
             else if (!strcmp(type, "Reset Pin"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                const char* pin = module["Pin"];
-            
-                ptrPRUreset = &PRUreset;
-    
-                printf("Make Reset Pin at pin %s\n", pin);
-
-                Module* resetPin = new ResetPin(*ptrPRUreset, pin);
-                servoThread->registerModule(resetPin);
-
+                createResetPin();
             }
             else if (!strcmp(type, "Blink"))
             {
-                const char* pin = module["Pin"];
-                int frequency = module["Frequency"];
-                
-                printf("Make Blink at pin %s\n", pin);
-                    
-                Module* blink = new Blink(pin, PRU_SERVOFREQ, frequency);
-                servoThread->registerModule(blink);
+                createBlink();
             }
             else if (!strcmp(type,"Digital Pin"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                const char* pin = module["Pin"];
-                const char* mode = module["Mode"];
-                const char* invert = module["Invert"];
-                const char* modifier = module["Modifier"];
-                int dataBit = module["Data Bit"];
-
-                int mod;
-                bool inv;
-
-                if (!strcmp(modifier,"Open Drain"))
-                {
-                    mod = OPENDRAIN;
-                }
-                else if (!strcmp(modifier,"Pull Up"))
-                {
-                    mod = PULLUP;
-                }
-                else if (!strcmp(modifier,"Pull Down"))
-                {
-                    mod = PULLDOWN;
-                }
-                else if (!strcmp(modifier,"Pull None"))
-                {
-                    mod = PULLNONE;
-                }
-                else
-                {
-                    mod = NONE;
-                }
-
-                if (!strcmp(invert,"True"))
-                {
-                    inv = true;
-                }
-                else inv = false;
-
-                ptrOutputs = &rxData.outputs;
-                ptrInputs = &txData.inputs;
-    
-                printf("Make Digital %s at pin %s\n", mode, pin);
-    
-                if (!strcmp(mode,"Output"))
-                {
-                    //Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrOutputs, 1, pin, dataBit, inv, mod);
-                    servoThread->registerModule(digitalPin);
-                }
-                else if (!strcmp(mode,"Input"))
-                {
-                    //Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, invert);
-                    Module* digitalPin = new DigitalPin(*ptrInputs, 0, pin, dataBit, inv, mod);
-                    servoThread->registerModule(digitalPin);
-                }
-                else
-                {
-                    printf("Error - incorrectly defined Digital Pin\n");
-                }
+                createDigitalPin();
             }
             else if (!strcmp(type,"PWM"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                int sp = module["SP[i]"];
-                int pwmMax = module["PWM Max"];
-                const char* pin = module["PWM Pin"];
-
-                const char* hardware = module["Hardware PWM"];
-                const char* variable = module["Variable Freq"];
-                int period_sp = module["Period SP[i]"];
-                int period = module["Period us"];
-            
-                printf("Make PWM at pin %s\n", pin);
-                
-                ptrSetPoint[sp] = &rxData.setPoint[sp];
-
-                if (!strcmp(hardware,"True"))
-                {
-                    // Hardware PWM
-                    if (!strcmp(variable,"True"))
-                    {
-                        // Variable frequency hardware PWM
-                        ptrSetPoint[period_sp] = &rxData.setPoint[period_sp];
-
-                        Module* pwm = new HardwarePWM(*ptrSetPoint[period_sp], *ptrSetPoint[sp], period, pin);
-                        servoThread->registerModule(pwm);
-                    }
-                    else
-                    {
-                        // Fixed frequency hardware PWM
-                        Module* pwm = new HardwarePWM(*ptrSetPoint[sp], period, pin);
-                        servoThread->registerModule(pwm);
-                    }
-                }
-                else
-                {
-                    // Software PWM
-                    if (pwmMax != 0) // use configuration file value for pwmMax - useful for 12V on 24V systems
-                    {
-                        Module* pwm = new PWM(*ptrSetPoint[sp], pin, pwmMax);
-                        servoThread->registerModule(pwm);
-                    }
-                    else // use default value of pwmMax
-                    {
-                        Module* pwm = new PWM(*ptrSetPoint[sp], pin);
-                        servoThread->registerModule(pwm);
-                    }
-                }
+                createPWM();
             }
             else if (!strcmp(type,"Temperature"))
             { 
-                printf("Make Temperature measurement object\n");
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-
-                int pv = module["PV[i]"];
-                const char* sensor = module["Sensor"];
-
-                ptrProcessVariable[pv]  = &txData.processVariable[pv];
-
-                if (!strcmp(sensor, "Thermistor"))
-                {
-                    const char* pinSensor = module["Thermistor"]["Pin"];
-                    float beta =  module["Thermistor"]["beta"];
-                    int r0 = module["Thermistor"]["r0"];
-                    int t0 = module["Thermistor"]["t0"];
-
-                    // slow module with 1 hz update
-                    int updateHz = 1;
-                    Module* temperature = new Temperature(*ptrProcessVariable[pv], PRU_SERVOFREQ, updateHz, sensor, pinSensor, beta, r0, t0);
-                    servoThread->registerModule(temperature);
-                }
+                createTemperature();
             }
             else if (!strcmp(type,"Switch"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                const char* pin = module["Pin"];
-                const char* mode = module["Mode"];
-                int pv = module["PV[i]"];
-                float sp = module["SP"];
-            
-                printf("Make Switch (%s) at pin %s\n", mode, pin);
-    
-                if (!strcmp(mode,"On"))
-                {
-                    Module* SoftSwitch = new Switch(sp, *ptrProcessVariable[pv], pin, 1);
-                    servoThread->registerModule(SoftSwitch);
-                }
-                else if (!strcmp(mode,"Off"))
-                {
-                    Module* SoftSwitch = new Switch(sp, *ptrProcessVariable[pv], pin, 0);
-                    servoThread->registerModule(SoftSwitch);
-                }
-                else
-                {
-                    printf("Error - incorrectly defined Switch\n");
-                }
+                createSwitch();
             }
-             else if (!strcmp(type,"QEI"))
+            else if (!strcmp(type,"QEI"))
             {
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-    
-                int pv = module["PV[i]"];
-                int dataBit = module["Data Bit"];
-                const char* index = module["Enable Index"];
-            
-                printf("Creating QEI, hardware quadrature encoder interface\n");
-           
-                ptrProcessVariable[pv]  = &txData.processVariable[pv];
-                ptrInputs = &txData.inputs;
-
-                if (!strcmp(index,"True"))
-                {
-                    printf("  Encoder has index\n");
-                    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, dataBit);
-                    baseThread->registerModule(qei);
-                }
-                else
-                {
-                    Module* qei = new QEI(*ptrProcessVariable[pv]);
-                    baseThread->registerModule(qei);
-                }
+                createQEI();
             }
         }
         else if (!strcmp(thread,"On load"))
         {
             printf("\nOn load - run once module\n");
 
+
             if (!strcmp(type,"MCP4451")) // digipot
             {
-                printf("Make MCP4451 Digipot object\n");
-
-                const char* sda = module["I2C SDA pin"];
-                const char* scl = module["I2C SCL pin"];
-                int address = module["I2C address"];
-                float maxCurrent = module["Max current"];
-                float factor = module["Factor"];
-                float c0 = module["Current 0"];
-                float c1 = module["Current 1"];
-                float c2 = module["Current 2"];
-                float c3 = module["Current 3"];
-
-                Module* digipot = new MCP4451(sda, scl, address, maxCurrent, factor, c0, c1, c2, c3);
-                digipot->update();
-                delete digipot;
+				createMCP4451();
             }
-            else if (!strcmp(type,"TMC stepper"))
+            else if (!strcmp(type,"Motor Power"))
             {
-                printf("Make TMC");
-
-                const char* driver = module["Driver"];
-                printf("%s\n", driver);
-
-                const char* comment = module["Comment"];
-                printf("%s\n",comment);
-
-                const char* RxPin = module["RX pin"];
-                float RSense = module["RSense"];
-                uint8_t address = module["Address"];
-                uint16_t current = module["Current"];
-                uint16_t microsteps = module["Microsteps"];
-                const char* stealth = module["Stealth chop"];
-                uint16_t stall = module["Stall sensitivity"];
-
-                bool stealthchop;
-
-                if (!strcmp(stealth, "on"))
-                {
-                    stealthchop = true;
-                }
-                else
-                {
-                    stealthchop = false;   
-                }
-
-                printf("%s\n", driver);
-
-                if (!strcmp(driver, "2208"))
-                {
-                    // SW Serial pin, RSense, mA, microsteps, stealh
-                    // TMC2208(std::string, float, uint8_t, uint16_t, uint16_t, bool);
-                    Module* tmc = new TMC2208(RxPin, RSense, current, microsteps, stealthchop);
-                
-                    printf("\nStarting the COMMS thread\n");
-                    commsThread->startThread();
-                    commsThread->registerModule(tmc);
-                    
-                    tmc->configure();
-
-                    printf("\nStopping the COMMS thread\n");
-                    commsThread->stopThread();
-                    commsThread->unregisterModule(tmc);
-                    delete tmc;
-                }
-                else if (!strcmp(driver, "2209"))
-                {
-                    // SW Serial pin, RSense, addr, mA, microsteps, stealh, stall
-                    // TMC2209(std::string, float, uint8_t, uint16_t, uint16_t, bool, uint16_t);
-                    Module* tmc = new TMC2209(RxPin, RSense, address, current, microsteps, stealthchop, stall);
-                
-                    printf("\nStarting the COMMS thread\n");
-                    commsThread->startThread();
-                    commsThread->registerModule(tmc);
-                    
-                    tmc->configure();
-
-                    printf("\nStopping the COMMS thread\n");
-                    commsThread->stopThread();
-                    commsThread->unregisterModule(tmc);
-                    delete tmc;
-                }
+                createMotorPower();
+            }
+            else if (!strcmp(type,"TMC2208"))
+            {
+                createTMC2208();
+            }
+            else if (!strcmp(type,"TMC2209"))
+            {
+                createTMC2209();
             }
         }
     }
 }
 
 
-int main() {
+int main()
+{
     
     enum State currentState;
     enum State prevState;
 
-    SPIdata = false;
-    SPIdataError = false;
+    comms.setStatus(false);
+    comms.setError(false);
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
@@ -965,7 +362,7 @@ int main() {
             // do setup tasks
             if (currentState != prevState)
             {
-                printf("## Entering SETUP state\n");
+                printf("\n## Entering SETUP state\n");
             }
             prevState = currentState;
 
@@ -1022,16 +419,14 @@ int main() {
             prevState = currentState;
 
             // check to see if there there has been SPI errors
-            if (SPIdataError)
+            if (comms.getError())
             {
-                printf("SPI data error:\n");
-                printf("    spiRxBuffer1.header = %x\n", spiRxBuffer1.header);
-                printf("    spiRxBuffer2.header = %x\n", spiRxBuffer2.header);
-                SPIdataError = false;
+                printf("Communication data error\n");
+                comms.setError(false);
             }
 
             //wait for SPI data before changing to running state
-            if (SPIdata)
+            if (comms.getStatus())
             {
                 currentState = ST_RUNNING;
             }
@@ -1052,30 +447,28 @@ int main() {
             prevState = currentState;
 
             // check to see if there there has been SPI errors 
-            if (SPIdataError)
+            if (comms.getError())
             {
-                printf("SPI data error:\n");
-                printf("    spiRxBuffer1.header = %x\n", spiRxBuffer1.header);
-                printf("    spiRxBuffer2.header = %x\n", spiRxBuffer2.header);
-                SPIdataError = false;
+                printf("Communication data error\n");
+                comms.setError(false);
             }
             
-            if (SPIdata)
+            if (comms.getStatus())
             {
                 // SPI data received by DMA
                 resetCnt = 0;
-                SPIdata = false;
+                comms.setStatus(false);
             }
             else
             {
-                // no SPI data received by DMA
+                // no data received by DMA
                 resetCnt++;
             }
 
             if (resetCnt > SPI_ERR_MAX)
             {
                 // reset threshold reached, reset the PRU
-                printf("   SPI data error limit reached, resetting\n");
+                printf("   Communication data error limit reached, resetting\n");
                 resetCnt = 0;
                 currentState = ST_RESET;
             }
@@ -1106,11 +499,6 @@ int main() {
                 printf("\n## Entering RESET state\n");
             }
             prevState = currentState;
-
-            // reset DMA transfers - this does not work properly... :-( ??
-            //LPC_SPI->SPCR |= (0<<2);    // reset SPI enable bit, this will clear the 16-byte Rx FIFO
-            //DMAreset();
-            //LPC_SPI->SPCR |= (1<<2);
 
             // set all of the rxData buffer to 0
             // rxData.rxBuffer is volatile so need to do this the long way. memset cannot be used for volatile

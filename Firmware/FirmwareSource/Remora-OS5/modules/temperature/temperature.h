@@ -3,11 +3,15 @@
 
 #include <cstdint>
 #include <string>
-#include <iostream>
+//#include <iostream>
 
 #include "modules/module.h"
 #include "sensors/tempSensor.h"
 #include "sensors/thermistor/thermistor.h"
+
+#include "extern.h"
+
+void createTemperature(void);
 
 class Temperature : public Module
 {

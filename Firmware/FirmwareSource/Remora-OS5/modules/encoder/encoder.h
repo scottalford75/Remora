@@ -9,6 +9,10 @@
 #include "modules/module.h"
 #include "drivers/pin/pin.h"
 
+#include "extern.h"
+
+void createEncoder(void);
+
 class Encoder : public Module
 {
 

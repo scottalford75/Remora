@@ -6,6 +6,9 @@
 #include "modules/module.h"
 #include "drivers/pin/pin.h"
 
+#include "extern.h"
+
+void createDigitalPin(void);
 
 class DigitalPin : public Module
 {
