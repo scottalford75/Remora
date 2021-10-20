@@ -2,7 +2,7 @@
 
 The full documentation is at <https://remora-docs.readthedocs.io/en/latest/>
 
-Remora is a free, opensource LinuxCNC component and Programmable Realtime Unit (PRU) firmware to allow LPC17xx micro-controller "Smoothieboard" compatible controller boards to be used in conjuction with a Raspberry Pi to implement a LinuxCNC based CNC controller.
+Remora is a free, opensource LinuxCNC component and Programmable Realtime Unit (PRU) firmware to allow LPC17xx and STM32F4 base controller boards to be used in conjuction with a Raspberry Pi to implement a LinuxCNC based CNC controller.
 
 Having a low cost and accessable hardware platform for LinuxCNC is important if we want to use LinuxCNC for 3D printing for example. Having a controller box the size of the printer itself makes no sense in this applicatoin. A SoC based single board computer is ideal in this application. Although developed for 3D Printing, Remora (and LinuxCNC) is highly flexible and configurable for other CNC applications.
 
