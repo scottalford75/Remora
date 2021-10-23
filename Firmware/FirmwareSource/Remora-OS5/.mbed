@@ -1,3 +1,6 @@
 ROOT=.
-TARGET=SKRV2
-TARGET_CODE=custom-452
+<<<<<<< Updated upstream=undefined
+=
+>>>>>>> Stashed changes=undefined
+TARGET=OCTOPUS
+TARGET_CODE=custom-432

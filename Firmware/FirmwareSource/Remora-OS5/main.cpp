@@ -122,7 +122,7 @@ volatile uint8_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
-#elif defined TARGET_SKRV2
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
