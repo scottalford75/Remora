@@ -2,5 +2,5 @@ ROOT=.
 <<<<<<< Updated upstream=undefined
 =
 >>>>>>> Stashed changes=undefined
-TARGET=SKRV2
-TARGET_CODE=custom-452
+TARGET=SKRV1_4
+TARGET_CODE=1010
