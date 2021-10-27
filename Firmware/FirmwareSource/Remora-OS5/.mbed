@@ -2,5 +2,10 @@ ROOT=.
 <<<<<<< Updated upstream=undefined
 =
 >>>>>>> Stashed changes=undefined
+<<<<<<< Updated upstream
 TARGET=SKRV1_4
 TARGET_CODE=1010
+=======
+TARGET=ARCH_MAX
+TARGET_CODE=9011
+>>>>>>> Stashed changes
