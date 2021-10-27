@@ -58,8 +58,7 @@
             "CAN",
             "SERIAL_ASYNCH",
             "FLASH",
-            "MPU",
-            "USBDEVICE"
+            "MPU"
         ],
         "device_name": "STM32F446ZE",
         "bootloader_supported": true

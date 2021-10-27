@@ -17,8 +17,8 @@
 /**
   * This file configures the system clock as follows:
   *-----------------------------------------------------------------------------
-  * System clock source | 1- USE_PLL_HSE_EXTC (external 8 MHz clock)
-  *                     | 2- USE_PLL_HSE_XTAL (external 8 MHz xtal)
+  * System clock source | 1- USE_PLL_HSE_EXTC (external 12 MHz clock)
+  *                     | 2- USE_PLL_HSE_XTAL (external 12 MHz xtal)
   *                     | 3- USE_PLL_HSI (internal 16 MHz)
   *-----------------------------------------------------------------------------
   * SYSCLK(MHz)         | 180
@@ -169,11 +169,11 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
     }
     RCC_OscInitStruct.PLL.PLLState  = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = 8;             // VCO input clock = 1 MHz (8 MHz / 8)
-    RCC_OscInitStruct.PLL.PLLN = 360;           // VCO output clock = 360 MHz (1 MHz * 360)
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2; // PLLCLK = 180 MHz (360 MHz / 2)
-    RCC_OscInitStruct.PLL.PLLQ = 7;             //
-    RCC_OscInitStruct.PLL.PLLR = 2;             //
+    RCC_OscInitStruct.PLL.PLLM = 6;             
+    RCC_OscInitStruct.PLL.PLLN = 180;           
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2; 
+    RCC_OscInitStruct.PLL.PLLQ = 7;             
+    RCC_OscInitStruct.PLL.PLLR = 2;             
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         return 0; // FAIL
     }
@@ -185,9 +185,9 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 
 #if DEVICE_USBDEVICE
     // Select PLLSAI output as USB clock source
-    PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
-    PeriphClkInitStruct.PLLSAI.PLLSAIN = 384;
-    PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV8;
+    PeriphClkInitStruct.PLLSAI.PLLSAIM = 6;
+    PeriphClkInitStruct.PLLSAI.PLLSAIN = 96;
+    PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
     PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLSAIP;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
