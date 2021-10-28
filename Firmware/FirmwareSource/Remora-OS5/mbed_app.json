@@ -35,6 +35,12 @@
             "target.stdio_uart_tx": "PD_5",
             "target.stdio_uart_rx": "PD_6",
             "target.features_add": ["STORAGE"]
+        },
+        "ARCH_MAX": {
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"]
         }
     }
 }
