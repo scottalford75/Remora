@@ -47,8 +47,6 @@ MODULE_AUTHOR("Scott Alford AKA scotta");
 MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
 MODULE_LICENSE("GPL v2");
 
-char *ctrl_type[JOINTS] = { "p" };
-RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
@@ -146,9 +144,15 @@ static int64_t 		accum[JOINTS] = { 0 };
 static int32_t 		old_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
-typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
+static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
 
-static int reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
+char *ctrl_type[JOINTS] = { "p" };
+RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
+
+enum CHIP { LPC, STM } chip;
+char *chip_type = { "LPC" }; //default to LPC
+RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
 
 
@@ -163,6 +167,8 @@ static void spi_read();
 static void spi_transfer();
 static CONTROL parse_ctrl_type(const char *ctrl);
 
+
+
 /***********************************************************************
 *                       INIT AND EXIT CODE                             *
 ************************************************************************/
@@ -172,6 +178,7 @@ int rtapi_app_main(void)
     char name[HAL_NAME_LEN + 1];
 	int n, retval;
 
+	// parse stepgen control type
 	for (n = 0; n < JOINTS; n++) {
 		if(parse_ctrl_type(ctrl_type[n]) == INVALID) {
 			rtapi_print_msg(RTAPI_MSG_ERR,
@@ -180,6 +187,24 @@ int rtapi_app_main(void)
 			return -1;
 		}
     }
+	
+	// PRU chip type
+	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
+	{
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU chip type set to LPC");
+		chip = LPC;
+	}
+	else if (!strcmp(chip_type, "STM") || !strcmp(chip_type, "stm"))
+	{
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU chip type set to STM");
+		chip = STM;
+	}
+	else
+	{
+		rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU chip type (must be 'LPC' or 'STM')\n");
+		return -1;
+	}
+	
 
     // connect to the HAL, initialise the driver
     comp_id = hal_init(modname);
@@ -218,8 +243,12 @@ int rtapi_app_main(void)
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // The default
 
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);		// 3.125MHz on RPI3
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
+	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
+	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
+
+	if (chip = LPC) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
+	else if (chip = STM) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	
 
     bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
     bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
@@ -929,14 +958,20 @@ void spi_transfer()
 {
 	// send and receive data to and from the Remora PRU concurrently
 
-	int i;
-
-	for (i = 0; i < SPIBUFSIZE; i++)
+	if (chip = LPC) 
 	{
-		rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
+		int i;
+		for (i = 0; i < SPIBUFSIZE; i++)
+		{
+			rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
+		}
 	}
-
+	else if (chip = STM)
+	{
+		bcm2835_spi_transfernb(txData.txBuffer, rxData.rxBuffer, SPIBUFSIZE);
+	}
 }
+
 
 static CONTROL parse_ctrl_type(const char *ctrl)
 {
