@@ -267,8 +267,8 @@ int rtapi_app_main(void)
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
 
-	if (chip = LPC) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-	else if (chip = STM) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	
+	if (chip == LPC) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
+	else if (chip == STM) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	
 	
 	// check if the default SPI clock divider has been overriden at the command line
 	if (SPI_clk_div != -1)
