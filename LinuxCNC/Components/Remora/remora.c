@@ -196,12 +196,12 @@ int rtapi_app_main(void)
 	// check to see PRU chip type has been set at the command line
 	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
 	{
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU chip type set to LPC");
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to LPC\n");
 		chip = LPC;
 	}
 	else if (!strcmp(chip_type, "STM") || !strcmp(chip_type, "stm"))
 	{
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU chip type set to STM");
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to STM\n");
 		chip = STM;
 	}
 	else
@@ -267,8 +267,16 @@ int rtapi_app_main(void)
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
 
-	if (chip == LPC) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-	else if (chip == STM) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	
+	if (chip == LPC) 
+	{
+		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 64\n");
+	}
+	else if (chip == STM) 
+	{
+		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 16\n");
+	}
 	
 	// check if the default SPI clock divider has been overriden at the command line
 	if (SPI_clk_div != -1)
@@ -276,12 +284,13 @@ int rtapi_app_main(void)
 		// check that the setting is a power of 2
 		if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
 		{
-			bcm2835_spi_setClockDivider(SPI_clk_div);	
+			bcm2835_spi_setClockDivider(SPI_clk_div);
+			rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
 		}
 		else
 		{
 			// it's not a power of 2
-			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: SPI clock divider incorrect\n");
+			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: PRU SPI clock divider incorrect\n");
 			return -1;
 		}	
 	}
@@ -994,15 +1003,14 @@ void spi_transfer()
 {
 	// send and receive data to and from the Remora PRU concurrently
 
-	if (chip = LPC) 
+	if (chip == LPC) 
 	{
-		int i;
-		for (i = 0; i < SPIBUFSIZE; i++)
+		for (int i = 0; i < SPIBUFSIZE; i++)
 		{
 			rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
 		}
 	}
-	else if (chip = STM)
+	else if (chip == STM)
 	{
 		bcm2835_spi_transfernb(txData.txBuffer, rxData.rxBuffer, SPIBUFSIZE);
 	}
