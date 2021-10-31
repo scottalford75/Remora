@@ -82,6 +82,8 @@ enum State {
 };
 
 uint8_t resetCnt;
+uint32_t base_freq = PRU_BASEFREQ;
+uint32_t servo_freq = PRU_SERVOFREQ;
 
 // boolean
 volatile bool PRUreset;
@@ -136,6 +138,7 @@ FATFileSystem fileSystem("fs");
 FILE *jsonFile;
 string strJson;
 DynamicJsonDocument doc(JSON_BUFF_SIZE);
+JsonObject thread;
 JsonObject module;
 
 /***********************************************************************
@@ -204,12 +207,10 @@ void setup()
     // initialise the Remora comms 
     comms.init();
     comms.start();
-
-    createThreads();
 }
 
 
-void loadModules()
+void deserialiseJSON()
 {
     printf("\n3. Parsing json configuration file\n");
 
@@ -238,10 +239,44 @@ void loadModules()
             configError = true;
             break;
     }
+}
 
+
+void configThreads()
+{
     if (configError) return;
 
-    printf("\n4. Loading modules\n");
+    printf("\n4. Config threads\n");
+
+    JsonArray Threads = doc["Threads"];
+
+    // create objects from json data
+    for (JsonArray::iterator it=Threads.begin(); it!=Threads.end(); ++it)
+    {
+        thread = *it;
+        
+        const char* configor = thread["Thread"];
+        uint32_t    freq = thread["Frequency"];
+
+        if (!strcmp(configor,"Base"))
+        {
+            base_freq = freq;
+            printf("Setting BASE thread frequency to %d\n", base_freq);
+        }
+        else if (!strcmp(configor,"Servo"))
+        {
+            servo_freq = freq;
+            printf("Setting SERVO thread frequency to %d\n", servo_freq);
+        }
+    }
+}
+
+
+void loadModules()
+{
+    if (configError) return;
+
+    printf("\n5. Loading modules\n");
 
     JsonArray Modules = doc["Modules"];
 
@@ -368,6 +403,9 @@ int main()
 
             readJsonConfig();
             setup();
+            deserialiseJSON();
+            configThreads();
+            createThreads();
             loadModules();
 
             currentState = ST_START;

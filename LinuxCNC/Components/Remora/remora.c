@@ -154,6 +154,11 @@ enum CHIP { LPC, STM } chip;
 char *chip_type = { "LPC" }; //default to LPC
 RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
+int SPI_clk_div = -1;
+RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
+
+int PRU_base_freq = -1;
+RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
 
 
 /***********************************************************************
@@ -188,7 +193,7 @@ int rtapi_app_main(void)
 		}
     }
 	
-	// PRU chip type
+	// check to see PRU chip type has been set at the command line
 	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
 	{
 		rtapi_print_msg(RTAPI_MSG_INFO,"PRU chip type set to LPC");
@@ -204,6 +209,21 @@ int rtapi_app_main(void)
 		rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU chip type (must be 'LPC' or 'STM')\n");
 		return -1;
 	}
+	
+	// check to see if the PRU base frequency has been set at the command line
+	if (PRU_base_freq != -1)
+	{
+		if ((PRU_base_freq < 40000) || (PRU_base_freq > 120000))
+		{
+			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU base frequency incorrect\n");
+			return -1;
+		}
+	}
+	else
+	{
+		PRU_base_freq = PRU_BASEFREQ;
+	}
+	
 	
 
     // connect to the HAL, initialise the driver
@@ -249,6 +269,22 @@ int rtapi_app_main(void)
 
 	if (chip = LPC) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
 	else if (chip = STM) bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);	
+	
+	// check if the default SPI clock divider has been overriden at the command line
+	if (SPI_clk_div != -1)
+	{
+		// check that the setting is a power of 2
+		if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
+		{
+			bcm2835_spi_setClockDivider(SPI_clk_div);	
+		}
+		else
+		{
+			// it's not a power of 2
+			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: SPI clock divider incorrect\n");
+			return -1;
+		}	
+	}
 
     bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
     bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
@@ -639,8 +675,8 @@ void update_freq(void *arg, long period)
 
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
-		max_freq = PRU_BASEFREQ/(2.0); 	
-
+		//max_freq = PRU_BASEFREQ/(2.0); 	
+		max_freq = PRU_base_freq/(2.0);
 
 		// check for user specified frequency limit parameter
 		if (data->maxvel[i] <= 0.0)
