@@ -18,7 +18,7 @@ class QEI : public Module
 
         QEIdriver*              qei;
 
-        volatile uint8_t*       ptrData; 	// pointer to the data source
+        volatile uint16_t*      ptrData; 	// pointer to the data source
 		int                     bitNumber;				// location in the data source
         int                     mask;
 
@@ -32,7 +32,7 @@ class QEI : public Module
 	public:
 
         QEI(volatile float&);                           // for channel A & B
-        QEI(volatile float&, volatile uint8_t&, int);   // For channels A & B, and index
+        QEI(volatile float&, volatile uint16_t&, int);   // For channels A & B, and index
 
 		virtual void update(void);
 };

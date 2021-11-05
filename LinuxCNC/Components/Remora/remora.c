@@ -87,6 +87,8 @@ typedef struct {
 static data_t *data;
 
 
+#pragma pack(push, 1)
+
 typedef union
 {
   // this allow structured access to the outgoing SPI data without having to move it
@@ -101,13 +103,10 @@ typedef union
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
 	uint8_t jointEnable;
-	uint8_t outputs;
-	uint8_t spare2;
-    uint8_t spare1;
+	uint16_t outputs;
+    uint8_t spare0;
   };
 } txData_t;
-
-static txData_t txData;
 
 
 typedef union
@@ -123,12 +122,14 @@ typedef union
     int32_t header;
     int32_t jointFeedback[JOINTS];
     float 	processVariable[VARIABLES];
-    uint8_t inputs;
+    uint16_t inputs;
   };
 } rxData_t;
 
-static rxData_t rxData;
+#pragma pack(pop)
 
+static txData_t txData;
+static rxData_t rxData;
 
 
 /* other globals */
