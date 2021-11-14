@@ -72,7 +72,7 @@ Encoder::Encoder(volatile float &ptrEncoderCount, std::string ChA, std::string C
 	this->count = 0;								                // initialise the count to 0
 }
 
-Encoder::Encoder(volatile float &ptrEncoderCount, volatile uint8_t &ptrData, int bitNumber, std::string ChA, std::string ChB, std::string Index, int modifier) :
+Encoder::Encoder(volatile float &ptrEncoderCount, volatile uint16_t &ptrData, int bitNumber, std::string ChA, std::string ChB, std::string Index, int modifier) :
 	ptrEncoderCount(&ptrEncoderCount),
     ptrData(&ptrData),
     bitNumber(bitNumber),

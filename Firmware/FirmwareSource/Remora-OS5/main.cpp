@@ -111,8 +111,8 @@ volatile int32_t* ptrJointFeedback[JOINTS];
 volatile uint8_t* ptrJointEnable;
 volatile float*   ptrSetPoint[VARIABLES];
 volatile float*   ptrProcessVariable[VARIABLES];
-volatile uint8_t* ptrInputs;
-volatile uint8_t* ptrOutputs;
+volatile uint16_t* ptrInputs;
+volatile uint16_t* ptrOutputs;
 
 
 /***********************************************************************
