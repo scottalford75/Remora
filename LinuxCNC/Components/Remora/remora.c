@@ -47,8 +47,6 @@ MODULE_AUTHOR("Scott Alford AKA scotta");
 MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
 MODULE_LICENSE("GPL v2");
 
-char *ctrl_type[JOINTS] = { "p" };
-RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
@@ -89,6 +87,8 @@ typedef struct {
 static data_t *data;
 
 
+#pragma pack(push, 1)
+
 typedef union
 {
   // this allow structured access to the outgoing SPI data without having to move it
@@ -103,13 +103,10 @@ typedef union
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
 	uint8_t jointEnable;
-	uint8_t outputs;
-	uint8_t spare2;
-    uint8_t spare1;
+	uint16_t outputs;
+    uint8_t spare0;
   };
 } txData_t;
-
-static txData_t txData;
 
 
 typedef union
@@ -125,12 +122,14 @@ typedef union
     int32_t header;
     int32_t jointFeedback[JOINTS];
     float 	processVariable[VARIABLES];
-    uint8_t inputs;
+    uint16_t inputs;
   };
 } rxData_t;
 
-static rxData_t rxData;
+#pragma pack(pop)
 
+static txData_t txData;
+static rxData_t rxData;
 
 
 /* other globals */
@@ -146,10 +145,21 @@ static int64_t 		accum[JOINTS] = { 0 };
 static int32_t 		old_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
+static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+
 typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
+char *ctrl_type[JOINTS] = { "p" };
+RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
-static int reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+enum CHIP { LPC, STM } chip;
+char *chip_type = { "LPC" }; //default to LPC
+RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
+int SPI_clk_div = -1;
+RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
+
+int PRU_base_freq = -1;
+RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
 
 
 /***********************************************************************
@@ -163,6 +173,8 @@ static void spi_read();
 static void spi_transfer();
 static CONTROL parse_ctrl_type(const char *ctrl);
 
+
+
 /***********************************************************************
 *                       INIT AND EXIT CODE                             *
 ************************************************************************/
@@ -172,6 +184,7 @@ int rtapi_app_main(void)
     char name[HAL_NAME_LEN + 1];
 	int n, retval;
 
+	// parse stepgen control type
 	for (n = 0; n < JOINTS; n++) {
 		if(parse_ctrl_type(ctrl_type[n]) == INVALID) {
 			rtapi_print_msg(RTAPI_MSG_ERR,
@@ -180,6 +193,39 @@ int rtapi_app_main(void)
 			return -1;
 		}
     }
+	
+	// check to see PRU chip type has been set at the command line
+	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
+	{
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to LPC\n");
+		chip = LPC;
+	}
+	else if (!strcmp(chip_type, "STM") || !strcmp(chip_type, "stm"))
+	{
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to STM\n");
+		chip = STM;
+	}
+	else
+	{
+		rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU chip type (must be 'LPC' or 'STM')\n");
+		return -1;
+	}
+	
+	// check to see if the PRU base frequency has been set at the command line
+	if (PRU_base_freq != -1)
+	{
+		if ((PRU_base_freq < 40000) || (PRU_base_freq > 120000))
+		{
+			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU base frequency incorrect\n");
+			return -1;
+		}
+	}
+	else
+	{
+		PRU_base_freq = PRU_BASEFREQ;
+	}
+	
+	
 
     // connect to the HAL, initialise the driver
     comp_id = hal_init(modname);
@@ -218,8 +264,37 @@ int rtapi_app_main(void)
 	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // The default
 
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);		// 3.125MHz on RPI3
-	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
+	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
 	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
+	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
+
+	if (chip == LPC) 
+	{
+		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 64\n");
+	}
+	else if (chip == STM) 
+	{
+		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);
+		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 16\n");
+	}
+	
+	// check if the default SPI clock divider has been overriden at the command line
+	if (SPI_clk_div != -1)
+	{
+		// check that the setting is a power of 2
+		if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
+		{
+			bcm2835_spi_setClockDivider(SPI_clk_div);
+			rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
+		}
+		else
+		{
+			// it's not a power of 2
+			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: PRU SPI clock divider incorrect\n");
+			return -1;
+		}	
+	}
 
     bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
     bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
@@ -610,8 +685,8 @@ void update_freq(void *arg, long period)
 
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
-		max_freq = PRU_BASEFREQ/(2.0); 	
-
+		//max_freq = PRU_BASEFREQ/(2.0); 	
+		max_freq = PRU_base_freq/(2.0);
 
 		// check for user specified frequency limit parameter
 		if (data->maxvel[i] <= 0.0)
@@ -929,14 +1004,19 @@ void spi_transfer()
 {
 	// send and receive data to and from the Remora PRU concurrently
 
-	int i;
-
-	for (i = 0; i < SPIBUFSIZE; i++)
+	if (chip == LPC) 
 	{
-		rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
+		for (int i = 0; i < SPIBUFSIZE; i++)
+		{
+			rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
+		}
 	}
-
+	else if (chip == STM)
+	{
+		bcm2835_spi_transfernb(txData.txBuffer, rxData.rxBuffer, SPIBUFSIZE);
+	}
 }
+
 
 static CONTROL parse_ctrl_type(const char *ctrl)
 {

@@ -14,7 +14,7 @@ class DigitalPin : public Module
 {
 	private:
 
-		volatile uint8_t *ptrData; 	// pointer to the data source
+		volatile uint16_t *ptrData; 	// pointer to the data source
 		int bitNumber;				// location in the data source
 		bool invert;
 		int mask;
@@ -27,7 +27,7 @@ class DigitalPin : public Module
 
 	public:
 
-        DigitalPin(volatile uint8_t&, int, std::string, int, bool, int);
+        DigitalPin(volatile uint16_t&, int, std::string, int, bool, int);
 		virtual void update(void);
 		virtual void slowUpdate(void);
 };

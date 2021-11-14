@@ -28,6 +28,19 @@
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"]
+        },
+        "OCTOPUS": {
+            "target.mbed_app_start": "0x08008000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PD_5",
+            "target.stdio_uart_rx": "PD_6",
+            "target.features_add": ["STORAGE"]
+        },
+        "ARCH_MAX": {
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"]
         }
     }
 }

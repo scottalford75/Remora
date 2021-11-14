@@ -34,5 +34,33 @@
         ],
         "device_name": "STM32F407VGTx",
         "bootloader_supported": true
+    },
+    "OCTOPUS": {
+        "inherits": ["FAMILY_STM32"],
+        "core": "Cortex-M4F",
+        "extra_labels_add": [
+            "STM32F4", 
+            "STM32F446xE", 
+            "STM32F446ZE"],
+        "config": {
+            "clock_source": {
+                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL (need HW patch) | USE_PLL_HSI",
+                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSI",
+                "macro_name": "CLOCK_SOURCE"
+            },
+            "usb_speed": {
+                "help": "USE_USB_OTG_FS or USE_USB_OTG_HS or USE_USB_HS_IN_FS",
+                "value": "USE_USB_OTG_FS"
+            }
+        },
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "FLASH",
+            "MPU"
+        ],
+        "device_name": "STM32F446ZE",
+        "bootloader_supported": true
     }
 }

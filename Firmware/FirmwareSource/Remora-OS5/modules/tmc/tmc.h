@@ -6,7 +6,7 @@
 #include <string>
 
 #include "module.h"
-#include "/TMCStepper/TMCstepper.h"
+#include "/TMCStepper/TMCStepper.h"
 
 #include "extern.h"
 
