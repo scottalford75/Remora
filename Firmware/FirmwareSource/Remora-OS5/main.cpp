@@ -82,8 +82,6 @@ enum State {
 };
 
 uint8_t resetCnt;
-uint32_t base_freq = PRU_BASEFREQ;
-uint32_t servo_freq = PRU_SERVOFREQ;
 
 // boolean
 volatile bool PRUreset;
@@ -111,8 +109,8 @@ volatile int32_t* ptrJointFeedback[JOINTS];
 volatile uint8_t* ptrJointEnable;
 volatile float*   ptrSetPoint[VARIABLES];
 volatile float*   ptrProcessVariable[VARIABLES];
-volatile uint16_t* ptrInputs;
-volatile uint16_t* ptrOutputs;
+volatile uint8_t* ptrInputs;
+volatile uint8_t* ptrOutputs;
 
 
 /***********************************************************************
@@ -124,7 +122,7 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_ARCH_MAX
+#elif defined TARGET_SKRV2
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
@@ -138,7 +136,6 @@ FATFileSystem fileSystem("fs");
 FILE *jsonFile;
 string strJson;
 DynamicJsonDocument doc(JSON_BUFF_SIZE);
-JsonObject thread;
 JsonObject module;
 
 /***********************************************************************
@@ -207,10 +204,12 @@ void setup()
     // initialise the Remora comms 
     comms.init();
     comms.start();
+
+    createThreads();
 }
 
 
-void deserialiseJSON()
+void loadModules()
 {
     printf("\n3. Parsing json configuration file\n");
 
@@ -239,44 +238,10 @@ void deserialiseJSON()
             configError = true;
             break;
     }
-}
 
-
-void configThreads()
-{
     if (configError) return;
 
-    printf("\n4. Config threads\n");
-
-    JsonArray Threads = doc["Threads"];
-
-    // create objects from json data
-    for (JsonArray::iterator it=Threads.begin(); it!=Threads.end(); ++it)
-    {
-        thread = *it;
-        
-        const char* configor = thread["Thread"];
-        uint32_t    freq = thread["Frequency"];
-
-        if (!strcmp(configor,"Base"))
-        {
-            base_freq = freq;
-            printf("Setting BASE thread frequency to %d\n", base_freq);
-        }
-        else if (!strcmp(configor,"Servo"))
-        {
-            servo_freq = freq;
-            printf("Setting SERVO thread frequency to %d\n", servo_freq);
-        }
-    }
-}
-
-
-void loadModules()
-{
-    if (configError) return;
-
-    printf("\n5. Loading modules\n");
+    printf("\n4. Loading modules\n");
 
     JsonArray Modules = doc["Modules"];
 
@@ -403,9 +368,6 @@ int main()
 
             readJsonConfig();
             setup();
-            deserialiseJSON();
-            configThreads();
-            createThreads();
             loadModules();
 
             currentState = ST_START;

@@ -23,7 +23,7 @@ class Encoder : public Module
         
         std::string Index;			// physical pin connection
         bool hasIndex;
-        volatile uint16_t *ptrData; 	// pointer to the data source
+        volatile uint8_t *ptrData; 	// pointer to the data source
 		int bitNumber;				// location in the data source
         int mask;
 
@@ -43,7 +43,7 @@ class Encoder : public Module
         Pin* pinI;      // index       
 
 		Encoder(volatile float&, std::string, std::string, int);
-        Encoder(volatile float&, volatile uint16_t&, int, std::string, std::string, std::string, int);
+        Encoder(volatile float&, volatile uint8_t&, int, std::string, std::string, std::string, int);
 
 		virtual void update(void);	// Module default interface
 };

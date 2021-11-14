@@ -9,7 +9,7 @@
 ************************************************************************/
 void createTMC2209()
 {
-    printf("Make TMC2209\n");
+    printf("Make TMC2209");
 
     const char* comment = module["Comment"];
     printf("%s\n",comment);

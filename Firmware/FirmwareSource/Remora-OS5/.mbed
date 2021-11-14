@@ -1,6 +1,3 @@
 ROOT=.
-<<<<<<< Updated upstream=undefined
-=
->>>>>>> Stashed changes=undefined
-TARGET=ARCH_MAX
-TARGET_CODE=9011
+TARGET=SKRV2
+TARGET_CODE=custom-452
