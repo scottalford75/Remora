@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X
+#if defined TARGET_LPC176X || TARGET_STM32F1
 #include "SDBlockDevice.h"
 #elif defined TARGET_STM32F4
 #include "SDIOBlockDevice.h"
@@ -128,6 +128,10 @@ volatile uint16_t* ptrOutputs;
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
+#elif defined TARGET_ROBIN_E3
+    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_15);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
 #endif
 
 // Watchdog
@@ -200,7 +204,7 @@ void setup()
     printf("\n2. Setting up DMA and threads\n");
 
     #if defined TARGET_STM32F4
-    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F
+    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
     blockDevice.deinit();
     #endif
 
@@ -368,6 +372,31 @@ void loadModules()
 }
 
 
+void debugThreadHigh()
+{
+    //Module* debugOnB = new Debug("PC_1", 1);
+    //baseThread->registerModule(debugOnB);
+
+    //Module* debugOnS = new Debug("PC_3", 1);
+    //servoThread->registerModule(debugOnS);
+
+    //Module* debugOnC = new Debug("PE_6", 1);
+    //commsThread->registerModule(debugOnC);
+}
+
+void debugThreadLow()
+{
+    //Module* debugOffB = new Debug("PC_1", 0);
+    //baseThread->registerModule(debugOffB); 
+
+    //Module* debugOffS = new Debug("PC_3", 0);
+    //servoThread->registerModule(debugOffS);
+
+    //commsThread->startThread();
+    //Module* debugOffC = new Debug("PE_6", 0);
+    //commsThread->registerModule(debugOffC); 
+}
+
 int main()
 {
     
@@ -406,7 +435,9 @@ int main()
             deserialiseJSON();
             configThreads();
             createThreads();
+            //debugThreadHigh();
             loadModules();
+            //debugThreadLow();
 
             currentState = ST_START;
             break; 
