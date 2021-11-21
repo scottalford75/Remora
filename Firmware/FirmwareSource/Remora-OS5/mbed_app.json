@@ -36,13 +36,20 @@
             "target.stdio_uart_rx": "PD_6",
             "target.features_add": ["STORAGE"]
         },
-        "ARCH_MAX": {
+        "BLACK_F407VE": {
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"]
         },
         "ROBIN_E3": {
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
+        }        ,
+        "SKR_MINI_E3": {
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",

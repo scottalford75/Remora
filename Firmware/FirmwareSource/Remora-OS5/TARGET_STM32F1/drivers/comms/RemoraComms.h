@@ -27,7 +27,9 @@ class RemoraComms
         bool                SPIdata;
         bool                SPIdataError;
         
+        PinName             interruptPin;
         InterruptIn         slaveSelect;
+        bool                sharedSPI;
         
         void processPacket(void);
 

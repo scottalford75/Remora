@@ -63,7 +63,41 @@
         "device_name": "STM32F446ZE",
         "bootloader_supported": true
     },
+    "BLACK_F407VE": {
+        "inherits": ["ARCH_MAX"]
+    },
     "ROBIN_E3": {
+        "inherits": ["FAMILY_STM32"],
+        "core": "Cortex-M3",
+        "extra_labels_add": [
+            "STM32F1", 
+            "STM32F103xC", 
+            "STM32F103RC"
+        ],
+        "supported_toolchains": ["ARMC6"],
+        "config": {
+            "clock_source": {
+                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL | USE_PLL_HSI",
+                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSE_XTAL|USE_PLL_HSI",
+                "macro_name": "CLOCK_SOURCE"
+            }
+        },
+        "device_has_add": [
+            "CAN",
+            "SERIAL_ASYNCH",
+            "FLASH",
+            "CRC",
+            "SD",
+            "PWM"
+        ],
+        "device_has_remove": ["LPTICKER"],
+        "overrides": {
+            "tickless-from-us-ticker": true
+        },
+        "device_name": "STM32F103RC",
+		"bootloader_supported": true
+    },
+    "SKR_MINI_E3": {
         "inherits": ["FAMILY_STM32"],
         "core": "Cortex-M3",
         "extra_labels_add": [
