@@ -1,0 +1,72 @@
+# Include your custom HAL commands here
+# This file will not be overwritten when you run stepconf again
+
+# tool changing
+
+	net tool-prepare-loopback iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+	net tool-change-loopback iocontrol.0.tool-change => iocontrol.0.tool-changed
+
+# PID controllers for heaters
+
+	loadrt PIDcontroller names=PID-bed,PID-ext0
+	addf PID-bed.compute servo-thread
+	addf PID-ext0.compute servo-thread
+
+
+# end-stops
+
+	#net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	#net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
+	#net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	#net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
+
+
+# remora command outputs
+
+	net bed-heater-SP 		=> remora.SP.0
+	net ext0-heater-SP  	=> remora.SP.1
+	net ext0-cooling-SP 	=> remora.SP.2
+	net BLtouch-SP 			=> remora.SP.3
+
+
+# remora command feedbacks
+
+	net bed-PV 			=> remora.PV.0
+	net ext0-PV 		=> remora.PV.1
+
+
+## Bed PID configuration
+
+	net remora-status 	=> PID-bed.auto
+	net bed-SP 			=> PID-bed.SP
+	net bed-PV 			=> PID-bed.PV
+	net bed-heater-SP 	=> PID-bed.CV
+
+	setp PID-bed.pOnM 	[BED]PID_PONM
+	setp PID-bed.direction	[BED]PID_DIR
+	setp PID-bed.KP		[BED]PID_KP
+	setp PID-bed.KI		[BED]PID_KI
+	setp PID-bed.KD		[BED]PID_KD
+	setp PID-bed.SPmin	[BED]PID_SPMIN
+	setp PID-bed.SPmax	[BED]PID_SPMAX
+	setp PID-bed.CVmin	[BED]PID_CVMIN
+	setp PID-bed.CVmax	[BED]PID_CVMAX
+
+
+# Extruder 0 PID configuration
+
+	net remora-status 	=> PID-ext0.auto
+	net ext0-SP 		=> PID-ext0.SP
+	net ext0-PV 		=> PID-ext0.PV
+	net ext0-heater-SP 	=> PID-ext0.CV
+
+	setp PID-ext0.pOnM 	[EXT0]PID_PONM
+	setp PID-ext0.direction	[EXT0]PID_DIR
+	setp PID-ext0.KP	[EXT0]PID_KP
+	setp PID-ext0.KI	[EXT0]PID_KI
+	setp PID-ext0.KD	[EXT0]PID_KD
+	setp PID-ext0.SPmin	[EXT0]PID_SPMIN
+	setp PID-ext0.SPmax	[EXT0]PID_SPMAX
+	setp PID-ext0.CVmin	[EXT0]PID_CVMIN
+	setp PID-ext0.CVmax	[EXT0]PID_CVMAX
+

@@ -96,8 +96,8 @@ pruThread* baseThread;
 pruThread* commsThread;
 
 // unions for RX and TX data
-volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moveing it to rxData
-volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moveing it to rxData
+//volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moving it to rxData
+//volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moving it to rxData
 volatile rxData_t rxData;
 volatile txData_t txData;
 
