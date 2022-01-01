@@ -29,6 +29,22 @@
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"]
         },
+        "MONSTER8": {
+            "target.mbed_app_start": "0x0800C000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
+        },
+        "SPIDER": {
+            "target.mbed_app_start": "0x08008000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PD_5",
+            "target.stdio_uart_rx": "PD_6",
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
+        },
         "OCTOPUS": {
             "target.mbed_app_start": "0x08008000",
             "platform.stdio-baud-rate": 115200,
@@ -36,11 +52,25 @@
             "target.stdio_uart_rx": "PD_6",
             "target.features_add": ["STORAGE"]
         },
-        "ARCH_MAX": {
+        "BLACK_F407VE": {
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"]
+        },
+        "ROBIN_E3": {
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
+        }        ,
+        "SKR_MINI_E3": {
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "target.components_add" : ["SD"]
         }
     }
 }

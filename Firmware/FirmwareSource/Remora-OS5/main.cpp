@@ -24,9 +24,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X
+#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
 #include "SDBlockDevice.h"
-#elif defined TARGET_STM32F4
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE
 #include "SDIOBlockDevice.h"
 #endif
 
@@ -66,6 +66,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "tmc.h"
 #include "qei.h"
 
+
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
 ************************************************************************/
@@ -96,10 +97,12 @@ pruThread* baseThread;
 pruThread* commsThread;
 
 // unions for RX and TX data
-volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moveing it to rxData
-volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moveing it to rxData
+//volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moving it to rxData
+//volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moving it to rxData
+volatile rxData_t rxBuffer;
 volatile rxData_t rxData;
 volatile txData_t txData;
+
 
 // pointers to data
 volatile rxData_t*  ptrRxData = &rxData;
@@ -124,9 +127,25 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_ARCH_MAX
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE
     SDIOBlockDevice blockDevice;
+    //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_MONSTER8
+    SDBlockDevice blockDevice(PC_12, PC_11, PC_10, PC_9);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_ROBIN_E3
+    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_15);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_SKR_MINI_E3
+    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
+
+#elif defined TARGET_SPIDER
+    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
 
 #endif
 
@@ -140,6 +159,28 @@ string strJson;
 DynamicJsonDocument doc(JSON_BUFF_SIZE);
 JsonObject thread;
 JsonObject module;
+
+// ethernet testing stuff
+// ----------------------------------------------------------------------
+#include "WIZnetInterface.h"
+
+#define SRC_PORT   27181
+#define DST_PORT   27181
+const char * SERVER_ADDRESS =   "10.10.10.11";  // Server IP address
+const char * IP_Addr    =       "10.10.10.10";
+const char * IP_Subnet  =       "255.255.255.0";
+const char * IP_Gateway =       "10.10.10.1";
+
+#define MOSI0               PA_7           
+#define MISO0               PA_6
+#define SCK0                PA_5
+#define SSEL0               PA_4
+
+SPI spi(MOSI0, MISO0, SCK0); // mosi, miso, sclk
+WIZnetInterface eth(&spi, SSEL0, PC_4); // spi, cs, reset    
+WIZnet_UDPSocket udp;
+Endpoint server;
+
 
 /***********************************************************************
         INTERRUPT HANDLERS - add NVIC_SetVector etc to setup()
@@ -199,14 +240,21 @@ void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
+    // TODO: we can probably just deinit the blockdevice for all targets....?
+
     #if defined TARGET_STM32F4
-    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F
+    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
+    blockDevice.deinit();
+    #endif
+
+    #if defined TARGET_SKR_MINI_E3
+    // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
 
     // initialise the Remora comms 
-    comms.init();
-    comms.start();
+    //comms.init();
+    //comms.start();
 }
 
 
@@ -368,14 +416,102 @@ void loadModules()
 }
 
 
+void debugThreadHigh()
+{
+    //Module* debugOnB = new Debug("PC_1", 1);
+    //baseThread->registerModule(debugOnB);
+
+    //Module* debugOnS = new Debug("PC_3", 1);
+    //servoThread->registerModule(debugOnS);
+
+    //Module* debugOnC = new Debug("PE_6", 1);
+    //commsThread->registerModule(debugOnC);
+}
+
+void debugThreadLow()
+{
+    //Module* debugOffB = new Debug("PC_1", 0);
+    //baseThread->registerModule(debugOffB); 
+
+    //Module* debugOffS = new Debug("PC_3", 0);
+    //servoThread->registerModule(debugOffS);
+
+    //commsThread->startThread();
+    //Module* debugOffC = new Debug("PE_6", 0);
+    //commsThread->registerModule(debugOffC); 
+}
+
+int ethernetInit()
+{
+    //-------------------------------------------------------
+    spi.frequency(12000000);
+
+    uint8_t mac[6];
+    mbed_mac_address((char *)mac);
+
+    printf("\nUsing Static address\n");
+    int ret = eth.init(mac, IP_Addr, IP_Subnet, IP_Gateway);
+    
+    if (!ret) {
+        printf("Initialized, MAC: %s\n", eth.getMACAddress());
+    } else {
+        printf("Error eth.init() - ret = %d\n", ret);
+        return -1;
+    }
+ 
+    ret = eth.connect();
+    if (!ret) {
+        printf("IP: %s, MASK: %s, GW: %s\n",
+                  eth.getIPAddress(), eth.getNetworkMask(), eth.getGateway());
+    } else {
+        printf("Error eth.connect() - ret = %d\n", ret);
+        return -1;
+    }
+ 
+
+    if(udp.init() == -1)
+    {
+        printf("UDP init failed \n");
+    }
+    else
+    {
+        printf("UDP init ok \n");
+    }
+
+    if(udp.bind(SRC_PORT) == -1)
+    {
+        printf("UDP bind failed \n");
+    }
+    else
+    {
+        printf("UDP bind ok \n");
+    }
+ 
+    if(server.set_address(SERVER_ADDRESS, DST_PORT) == -1)
+    {
+        printf("Endpoint init failed \n");
+    }
+    else
+    {
+        printf("Endpoint init ok \n");
+        printf("Endpoint IP %s\n", server.get_address());
+        printf("Endpoint Port %i\n", server.get_port());
+    }
+
+    return 1;
+
+    //-------------------------------------------------------
+}
+
 int main()
 {
-    
+    int sentBytes, recBytes;
+
     enum State currentState;
     enum State prevState;
 
-    comms.setStatus(false);
-    comms.setError(false);
+    //comms.setStatus(false);
+    //comms.setError(false);
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
@@ -406,7 +542,10 @@ int main()
             deserialiseJSON();
             configThreads();
             createThreads();
+            //debugThreadHigh();
             loadModules();
+            //debugThreadLow();
+            ethernetInit();
 
             currentState = ST_START;
             break; 
@@ -456,6 +595,7 @@ int main()
             }
             prevState = currentState;
 
+            /*
             // check to see if there there has been SPI errors
             if (comms.getError())
             {
@@ -473,6 +613,10 @@ int main()
             {
                 currentState = ST_WDRESET;
             }
+            */
+
+            // ethernet testing - jump straight into RUNNING
+            currentState = ST_RUNNING;
 
             break;
 
@@ -484,6 +628,40 @@ int main()
             }
             prevState = currentState;
 
+
+            recBytes = udp.receiveFrom(server, (char*)&rxBuffer.rxBuffer, SPI_BUFF_SIZE);
+            
+            if ((recBytes == 4) && (rxBuffer.header == PRU_READ))
+            {
+                // read request from LinuxCNC
+                txData.header = PRU_DATA;
+                sentBytes = udp.sendTo(server, (char*)&txData.txBuffer, SPI_BUFF_SIZE);
+            }
+            else if ((recBytes == 64) && (rxBuffer.header == PRU_WRITE))
+            {
+                // write request from LinuxCNC
+                // reply with a 4 byte header response only
+                txData.header = PRU_ACKNOWLEDGE;
+                sentBytes = udp.sendTo(server, (char*)&txData.txBuffer, sizeof(txData.header));
+
+                // then move the data
+                for (int i = 0; i < SPI_BUFF_SIZE; i++)
+                {
+                    rxData.rxBuffer[i] = rxBuffer.rxBuffer[i];
+                }
+            }
+            else if (recBytes >= 0)
+            {
+                // error condition we still need to reply so LinuxCNC receive does not time out
+                txData.header = PRU_ERR;
+                sentBytes = udp.sendTo(server, (char*)&txData.txBuffer, sizeof(txData.header));
+                printf("PRU_ERR\n");
+            }
+            if (sentBytes < 0) printf("Send error\n");
+            sentBytes = 0;
+
+
+            /*
             // check to see if there there has been SPI errors 
             if (comms.getError())
             {
@@ -510,11 +688,12 @@ int main()
                 resetCnt = 0;
                 currentState = ST_RESET;
             }
-
+            
             if (PRUreset) 
             {
                 currentState = ST_WDRESET;
             }
+            */
 
             break;
 
@@ -562,6 +741,7 @@ int main()
             break;
       }
 
-    wait(LOOP_TIME);
+    //wait(LOOP_TIME);
+    wait_ns(100000);
     }
 }
