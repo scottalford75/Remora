@@ -20,6 +20,9 @@
 #define PRU_WRITE           0x77726974      // "writ" SPI payload
 #define PRU_ESTOP           0x65737470      // "estp" SPI payload
 
+#define PRU_ACKNOWLEDGE		0x61636b6e	// "ackn" payload
+#define PRU_ERR		        0x6572726f	// "erro" payload
+
 
 // Serial configuration
 #define TXD0                P0_2            // MBED pin number
@@ -34,10 +37,10 @@
 // SPI configuration
 #define SPI_BUFF_SIZE 		64            	// Size of SPI recieve buffer - same as HAL component, 64
 
-#define MOSI0               P0_18           // RPi SPI
-#define MISO0               P0_17
-#define SCK0                P0_15
-#define SSEL0               P0_16
+//#define MOSI0               P0_18           // RPi SPI
+//#define MISO0               P0_17
+//#define SCK0                P0_15
+//#define SSEL0               P0_16
 
 //#define MOSI1               P0_9            // SD card
 //#define MISO1               P0_8
