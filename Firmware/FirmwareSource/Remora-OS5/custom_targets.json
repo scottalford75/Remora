@@ -64,6 +64,36 @@
         "device_name": "STM32F407VGTx",
         "bootloader_supported": true
     },
+    "OCTOPUS_PRO_429": {
+        "inherits": ["FAMILY_STM32"],
+        "core": "Cortex-M4F",
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F429",
+            "STM32F429xI",
+            "STM32F429ZI"
+          
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+        "config": {
+            "clock_source": {
+                "help": "Mask value : USE_PLL_HSE_EXTC (need HW patch) | USE_PLL_HSE_XTAL | USE_PLL_HSI",
+                "value": "USE_PLL_HSE_XTAL|USE_PLL_HSI",
+                "macro_name": "CLOCK_SOURCE"
+            }
+        },
+        "overrides": { "lse_available": 0 },
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "FLASH",
+            "MPU"
+        ],
+        "device_name": "STM32F429ZI",
+        "bootloader_supported": true
+    },
     "SPIDER": {
         "inherits": ["FAMILY_STM32"],
         "core": "Cortex-M4F",
