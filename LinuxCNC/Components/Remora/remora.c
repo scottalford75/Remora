@@ -771,7 +771,7 @@ void update_freq(void *arg, long period)
 			}
 			else
 			{
-				deadband = 1 / data->pos_scale[i];
+				deadband = fabs(1/data->pos_scale[i]);
 			}	
 
 			// read the command and feedback

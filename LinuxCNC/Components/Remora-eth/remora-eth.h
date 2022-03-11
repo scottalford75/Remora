@@ -6,9 +6,10 @@
 #define JOINTS				8  			// Number of joints - set this the same as Remora firmware code!!!. Max 8 joints
 #define VARIABLES          	6 			// Number of command values - set this the same Remora firmware code!!!
 #define DIGITAL_OUTPUTS		16
-#define DIGITAL_INPUTS		16
+#define DIGITAL_INPUTS		32
+#define NVMPG_INPUTS		10
 
-#define BUFFER_SIZE			64 			//(4+4*JOINTS+4*COMMANDS+1) //(MAX_MSG*4) //20  SPI buffer size ......FIFO buffer size is 64 bytes?
+#define BUFFER_SIZE			68 			
 
 #define PRU_DATA			0x64617461 	// "data" payload
 #define PRU_READ          	0x72656164  // "read" payload
