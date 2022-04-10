@@ -1,0 +1,78 @@
+# Basic HAL config file for NVEM controller board running Remora firmware
+# Configured for 3 joints (A, Y, Z axes) with home and limit switches
+
+loadrt [KINS]KINEMATICS
+loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
+
+# load the real-time components
+
+	loadrt remora-eth
+	loadrt estop_latch
+	loadrt and2
+
+
+# estop and comms enable and feedback
+
+	net nvem-estop 			<= estop-latch.0.fault-in 			<= remora.input.4
+
+	net user-enable-in 		<= and2.0.out	 					=> iocontrol.0.emc-enable-in
+	net remora-status		<= remora.status					=> and2.0.in0
+	net estop-status		<= estop-latch.0.ok-out				=> and2.0.in1
+	
+	net user-enable-out		<= iocontrol.0.user-enable-out		=> remora.enable
+	net user-enable-out	 										=> estop-latch.0.ok-in
+	net user-request-enable <= iocontrol.0.user-request-enable	=> remora.reset
+	net user-request-enable 									=> estop-latch.0.reset
+
+
+# add the remora and motion functions to threads
+
+	addf remora.read 			servo-thread
+	addf estop-latch.0 			servo-thread
+	addf and2.0					servo-thread
+	addf motion-command-handler servo-thread
+	addf motion-controller 		servo-thread
+	addf remora.update-freq 	servo-thread
+	addf remora.write 			servo-thread
+
+
+# joint 0 setup (X axis)
+
+	setp remora.joint.0.scale 		[JOINT_0]SCALE
+	setp remora.joint.0.maxaccel 	[JOINT_0]STEPGEN_MAXACCEL
+	setp remora.joint.0.pgain 100
+
+	net j0pos-cmd 		joint.0.motor-pos-cmd 	=> remora.joint.0.pos-cmd
+	net j0pos-fb 		remora.joint.0.pos-fb 	=> joint.0.motor-pos-fb
+	net j0enable 		joint.0.amp-enable-out 	=> remora.joint.0.enable
+
+	net X-min 	remora.input.6 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	net X-max 	remora.input.7 	=> joint.0.pos-lim-sw-in
+
+
+# joint 1 setup (Y axis)
+
+	setp remora.joint.1.scale 		[JOINT_1]SCALE
+	setp remora.joint.1.maxaccel 	[JOINT_1]STEPGEN_MAXACCEL
+	setp remora.joint.1.pgain 100
+
+	net j1pos-cmd 		joint.1.motor-pos-cmd 	=> remora.joint.1.pos-cmd
+	net j1pos-fb 		remora.joint.1.pos-fb 	=> joint.1.motor-pos-fb
+	net j1enable 		joint.1.amp-enable-out 	=> remora.joint.1.enable
+	
+	net Y-min 	remora.input.8 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	net Y-max 	remora.input.9 	=> joint.1.pos-lim-sw-in
+
+
+# joint 2 setup (Z axis)
+
+	setp remora.joint.2.scale [JOINT_2]SCALE
+	setp remora.joint.2.maxaccel [JOINT_2]STEPGEN_MAXACCEL
+	setp remora.joint.2.pgain 100
+
+	net j2pos-cmd 		joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
+	net j2pos-fb 		remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
+	net j2enable 		joint.2.amp-enable-out 	=> remora.joint.2.enable
+
+	net Z-min 	remora.input.10	=> joint.2.home-sw-in joint.2.neg-lim-sw-in
+	net Z-max 	remora.input.11	=> joint.2.pos-lim-sw-in
