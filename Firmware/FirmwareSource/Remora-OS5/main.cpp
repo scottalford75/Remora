@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
 #include "SDBlockDevice.h"
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
 #include "SDIOBlockDevice.h"
 #endif
 
@@ -124,7 +124,7 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 

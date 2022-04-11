@@ -30,12 +30,19 @@
             "target.features_add": ["STORAGE"]
         },
         "MONSTER8": {
-            "target.mbed_app_start": "0x0800C000",
+            
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"],
             "target.components_add" : ["SD"]
+        },
+        "OCTOPUS_PRO_429": {
+            "target.mbed_app_start": "0x08008000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"]
         },
         "SPIDER": {
             "target.mbed_app_start": "0x08008000",
