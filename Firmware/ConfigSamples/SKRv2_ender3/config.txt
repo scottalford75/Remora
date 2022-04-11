@@ -1,0 +1,158 @@
+{
+	"Board": "BIGTREETECH SKR v2",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PC_4"
+	},
+	{
+	"Thread": "On load",
+	"Type": "Motor Power",
+	"Comment": "Enable motor power SKR2",
+	"Pin":					 "PC_13"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PE_2",
+		"Direction Pin": 	"PE_1",
+		"Enable Pin": 		"PE_3"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PD_5",
+		"Direction Pin": 	"PD_4",
+		"Enable Pin": 		"PD_6"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PA_15",
+		"Direction Pin": 	"PA_8",
+		"Enable Pin": 		"PD_1"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E0 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"PD_15",
+		"Direction Pin": 	"PD_14",
+		"Enable Pin": 		"PC_7"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X min",
+		"Pin":				"PC_1",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X max",
+		"Pin":				"PC_2",
+		"Mode":				"Input",
+		"Data Bit":			1
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y min",
+		"Pin":				"PC_3",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y max",
+		"Pin":				"PA_0",
+		"Mode":				"Input",
+		"Data Bit":			3
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z min",
+		"Pin":				"PC_0",
+		"Mode":				"Input",
+		"Data Bit":			4
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z max",
+		"Pin":				"PC_15",
+		"Mode":				"Input",
+		"Data Bit":			5
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Heated Bed tenperature sensor",
+		"PV[i]": 			0,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"PA_1",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Bed heater PWM",
+		"SP[i]": 			0,
+		"PWM Pin": 			"PD_7"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Ext 0 temperature sensor",
+		"PV[i]": 			1,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"PA_2",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Ext0 heater PWM",
+		"SP[i]": 			1,
+		"PWM Pin": 			"PB_3"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Ext0 part cooling fan PWM FAN0",
+		"SP[i]": 			2,
+		"PWM Max":			128,
+		"PWM Pin": 			"PB_7"
+	},
+	{
+	"Thread": "Base",
+	"Type": "RCServo",
+		"Comment": 			"RC servo for probe bltouch according to marlin",
+		"SP[i]": 			3,
+		"Servo Pin": 		"PE_5"
+	}
+	]
+}
