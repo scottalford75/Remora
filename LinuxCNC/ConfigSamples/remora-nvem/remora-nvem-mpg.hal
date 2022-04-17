@@ -6,6 +6,11 @@
 	loadrt nvmpg
 	loadrt encoder num_chan=1
 
+# add the nvmpg and encoder functions to the servo thread
+
+	addf nvmpg.update 				servo-thread
+	addf encoder.update-counters	servo-thread
+	addf encoder.capture-position	servo-thread
 
 # NVMPG setup
 
@@ -45,8 +50,8 @@
 	net mpg-scale => axis.z.jog-scale
 	
 	# The MPG inputs
-	net mpg-a encoder.0.phase-A <= remora.input.25
-	net mpg-b encoder.0.phase-B <= remora.input.24
+	net mpg-a encoder.0.phase-A <= remora.input.28
+	net mpg-b encoder.0.phase-B <= remora.input.27
 
 	# The Axis select inputs
 	net mpg-x axis.x.jog-enable <= nvmpg.x-select
