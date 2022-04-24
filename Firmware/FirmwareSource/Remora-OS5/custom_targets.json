@@ -61,8 +61,7 @@
             "FLASH",
             "MPU"
         ],
-        "device_name": "STM32F407VGTx",
-        
+        "device_name": "STM32F407VGTx"        
     },
     "OCTOPUS_PRO_429": {
         "inherits": ["FAMILY_STM32"],
