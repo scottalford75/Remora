@@ -1,7 +1,7 @@
 /********************************************************************
-* Description:  remora.c
-*               This file, 'remora.c', is a HAL component that
-*               provides and SPI connection to a external LPC1768 running Remora PRU firmware.
+* Description:  remora-eth.c
+*               This file, 'remora-eth.c', is a HAL component that
+*               provides and ethernet connection to a external MCU running Remora PRU firmware.
 *  				
 *				Initially developed for RaspberryPi -> Arduino Due.
 *				Further developed for RaspberryPi -> Smoothieboard and clones (LPC1768).
@@ -70,11 +70,11 @@ typedef struct {
 	hal_float_t		*ff1gain[JOINTS];
 	hal_float_t		*deadband[JOINTS];
 	float 			old_pos_cmd[JOINTS];		// previous position command (counts)
-	float 			old_pos_cmd_raw[JOINTS];		// previous position command (counts)
+	float 			old_pos_cmd_raw[JOINTS];	// previous position command (counts)
 	float 			old_scale[JOINTS];			// stored scale value
 	float 			scale_recip[JOINTS];		// reciprocal value used for scaling
 	float			prev_cmd[JOINTS];
-	float			cmd_d[JOINTS];					// command derivative
+	float			cmd_d[JOINTS];				// command derivative
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
@@ -89,8 +89,8 @@ static data_t *data;
 
 typedef union
 {
-  // this allow structured access to the outgoing SPI data without having to move it
-  // this is the same structure as the PRU rxData structure
+  // this allow structured access to the outgoing data without having to move it
+  // this is the same structure as the Remora rxData structure
   struct
   {
     uint8_t txBuffer[BUFFER_SIZE];
@@ -109,8 +109,8 @@ typedef union
 
 typedef union
 {
-  // this allow structured access to the incoming SPI data without having to move it
-  // this is the same structure as the PRU txData structure
+  // this allow structured access to the incoming data without having to move it
+  // this is the same structure as the Remora txData structure
   struct
   {
     uint8_t rxBuffer[BUFFER_SIZE];
