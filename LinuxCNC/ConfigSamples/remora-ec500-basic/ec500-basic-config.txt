@@ -1,0 +1,29 @@
+{
+	"Board": "EC500",
+	"Modules":[
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PE_14",
+		"Direction Pin": 	"PE_13"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PE_11",
+		"Direction Pin": 	"PE_12"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PE_9",
+		"Direction Pin": 	"PE_10"
+	}
+	]
+}
