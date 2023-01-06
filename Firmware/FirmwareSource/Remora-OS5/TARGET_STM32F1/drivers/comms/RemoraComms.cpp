@@ -162,25 +162,18 @@ void RemoraComms::processPacket()
         //this->status = HAL_DMA_Start(&hdma_memtomem_dma2_stream1, (uint32_t)&this->spiRxBuffer.rxBuffer, (uint32_t)this->rxData->rxBuffer, SPI_BUFF_SIZE);
         //if (this->status != HAL_OK) printf("F\n");
        
-        // ensure an atomic access to the rxBuffer
-	    	    // disable thread interrupts
-		         __disable_irq();
-
-		        // then move the data
-		        for (int i = 0; i < BUFFER_SIZE; i++)
-		        {
-		            	rxData.rxBuffer[i] = rxBuffer.rxBuffer[i];
-		        }
-
-		        // re-enable thread interrupts
-		        __enable_irq();
             
         // Do it the slower way. This does not seem to impact performance but not great to stay in ISR context for longer.. :-(
+
+        // ensure an atomic access to the rxBuffer
+		// disable thread interrupts
+		__disable_irq();        
         for (int i = 0; i < SPI_BUFF_SIZE; i++)
         {
             this->ptrRxData->rxBuffer[i] = this->spiRxBuffer.rxBuffer[i];
         }
-
+		// re-enable thread interrupts
+		__enable_irq();
         break;
 
       default:
