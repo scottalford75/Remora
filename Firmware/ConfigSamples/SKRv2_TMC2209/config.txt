@@ -7,6 +7,12 @@
 		"Comment":			"Reset pin",
 		"Pin":				"PC_4"
 	},
+		{
+	"Thread": "On load",
+	"Type": "Motor Power",
+		"Comment": "Enable motor power SKR2",
+		"Pin":					 "PC_13"
+	},
 	{
 	"Thread": "Base",
 	"Type": "Stepgen",
