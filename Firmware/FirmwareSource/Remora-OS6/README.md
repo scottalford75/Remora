@@ -1,1 +1,1 @@
-Remora OS5 firmware
+Remora OS6 firmware
