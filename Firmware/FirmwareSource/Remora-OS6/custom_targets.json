@@ -1,4 +1,14 @@
 {
+    "MANTA8": {
+        "inherits": [
+            "MCU_STM32G0B1xE"
+        ],
+        "device_has_add": [
+            "ANALOGOUT",
+            "SD"
+        ],
+        "device_name": "STM32G0B1RETx"
+    },
   
     "SKRV2": {
         "inherits": ["MCU_STM32F4"],
