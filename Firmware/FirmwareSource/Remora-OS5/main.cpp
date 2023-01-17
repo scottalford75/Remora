@@ -478,7 +478,7 @@ int main()
 
             if (PRUreset)
             {
-                // RPi outputs default is high until configured when LinuxCNC spiPRU component is started, PRUreset pin will be high
+                // RPi outputs default is high until configured when LinuxCNC Remora component is started, PRUreset pin will be high
                 // stay in start state until LinuxCNC is started
                 currentState = ST_START;
             }
