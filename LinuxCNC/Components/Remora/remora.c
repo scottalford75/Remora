@@ -312,7 +312,7 @@ int rtapi_app_main(void)
 	bcm2835_gpio_set_pud(RPI_GPIO_P1_21, BCM2835_GPIO_PUD_DOWN);	// MISO
 	bcm2835_gpio_set_pud(RPI_GPIO_P1_24, BCM2835_GPIO_PUD_UP);		// CS0
 
-	// export spiPRU SPI enable and status bits
+	// export RemoraPRU SPI enable and status bits
 	retval = hal_pin_bit_newf(HAL_IN, &(data->SPIenable),
 			comp_id, "%s.SPI-enable", prefix);
 	if (retval != 0) goto error;
