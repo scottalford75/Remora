@@ -31,7 +31,7 @@
             "sd.SPI_MOSI": "PA_7",
             "sd.SPI_MISO": "PA_6",
             "sd.SPI_CLK":  "PA_4",
-            "sd.SPI_CS":   "PA_4",
+            "sd.SPI_CS":   "PA_8",
             "target.components_add" : ["SD"]
         },
         "SKRV2": {
@@ -42,13 +42,18 @@
             "target.features_add": ["STORAGE"]
         },
         "MONSTER8": {
+             "target.mbed_app_start": "0x0800C000",
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"],
+            "sd.SPI_MOSI": "PC_12",
+            "sd.SPI_MISO": "PC_11",
+            "sd.SPI_CLK":  "PC_10",
+            "sd.SPI_CS":   "PC_9",
             "target.components_add" : ["SD"]
         },
-        "OCTOPUS_PRO_429": {
+        "OCTOPUS_429": {
             "target.mbed_app_start": "0x08008000",
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
@@ -63,7 +68,8 @@
             "target.features_add": ["STORAGE"],
             "target.components_add" : ["SD"]
         },
-        "OCTOPUS": {
+        "OCTOPUS_446": {
+            "target.mbed_app_start": "0x08008000",
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
