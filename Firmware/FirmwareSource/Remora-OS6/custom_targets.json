@@ -138,6 +138,37 @@
         ],
         "device_name": "STM32F446ZETx",
         "bootloader_supported": true
+    },
+    "SPIDER": {
+        "inherits": ["MCU_STM32F4"],
+        "core": "Cortex-M4F",
+        "extra_labels_add": [
+            "STM32F4", 
+            "STM32F446xE", 
+            "STM32F446VE"],
+        "macros_add": [
+            "STM32F446xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "config": {     "hse_value": {
+                "help": "HSE default value is 8MHz in stm32g4xx_hal_conf.h",
+                "value": "12000000",
+                "macro_name": "HSE_VALUE"
+            }
+     
+        },
+         "overrides": { "lse_available": 0 ,
+            "clock_source":  "USE_PLL_HSE_XTAL"
+         },
+        "device_has_add": [
+            "ANALOGOUT",
+            "SERIAL_ASYNCH",
+            "MPU"
+        ],
+        "device_name": "STM32F446VETx",
+        "bootloader_supported": true
+        
     }
 
 }

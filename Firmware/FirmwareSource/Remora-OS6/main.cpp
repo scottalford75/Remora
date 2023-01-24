@@ -432,7 +432,7 @@ int main()
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-    printf("\nRemora PRU - Programmable Realtime Unit BOOTLOADER TEST  SPI SD DEBUG \n");
+    printf("\nRemora PRU - Programmable Realtime Unit SPIDER BOOTLOADER TEST 2 \n");
 
     watchdog.start(2000);
 
