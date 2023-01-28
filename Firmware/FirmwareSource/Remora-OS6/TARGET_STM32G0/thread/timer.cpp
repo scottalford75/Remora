@@ -40,7 +40,7 @@ void pruTimer::startTimer(void)
     {
         printf("	power on Timer 1\n\r");
         __HAL_RCC_TIM1_CLK_ENABLE();
-        TIM_CLK = APB2CLK;
+        TIM_CLK = APB1CLK;
     }
     else if (this->timer == TIM2)
     {

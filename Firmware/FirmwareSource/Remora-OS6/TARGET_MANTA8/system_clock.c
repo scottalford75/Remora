@@ -45,8 +45,44 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass);
 #if ((CLOCK_SOURCE) & USE_PLL_HSI)
 uint8_t SetSysClock_PLL_HSI(void);
 #endif /* ((CLOCK_SOURCE) & USE_PLL_HSI) */
+/**
+  * @brief  Setup the microcontroller system
+  *         Initialize the FPU setting, vector table location and External memory
+  *         configuration.
+  * @param  None
+  * @retval None
+  */
+void SystemInit(void)
+{
+    /* Reset the RCC clock configuration to the default reset state ------------*/
+    /* Set HSION bit */
+    RCC->CR |= (uint32_t)0x00000001;
 
+    /* Reset CFGR register */
+    RCC->CFGR = 0x00000000;
 
+    /* Reset HSEON, CSSON and PLLON bits */
+    RCC->CR &= (uint32_t)0xFEF6FFFF;
+
+    /* Reset PLLCFGR register */
+    RCC->PLLCFGR = 0x24003010;
+
+    /* Reset HSEBYP bit */
+    RCC->CR &= (uint32_t)0xFFFBFFFF;
+
+    /* Disable all interrupts */
+#if defined (DATA_IN_ExtSRAM) || defined (DATA_IN_ExtSDRAM)
+    SystemInit_ExtMemCtl();
+#endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
+
+    /* Configure the Vector Table location add offset address ------------------*/
+#ifdef VECT_TAB_SRAM
+    SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
+#else
+    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+#endif
+
+}
 /**
   * @brief  Configures the System clock source, PLL Multiplier and Divider factors,
   *               AHB/APBx prescalers and Flash settings
@@ -55,8 +91,7 @@ uint8_t SetSysClock_PLL_HSI(void);
   * @param  None
   * @retval None
   */
-
-MBED_WEAK void SetSysClock(void)
+void SetSysClock(void)
 {
 #if ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC)
     /* 1- Try to start with HSE and external clock */
@@ -74,7 +109,7 @@ MBED_WEAK void SetSysClock(void)
 #endif
             {
                 {
-                    error("SetSysClock failed\n");
+                    error("SetSysClock failed 8 \n");
                 }
             }
         }
@@ -85,7 +120,7 @@ MBED_WEAK void SetSysClock(void)
 /******************************************************************************/
 /*            PLL (clocked by HSE) used as System clock source                */
 /******************************************************************************/
-MBED_WEAK uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
+uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};

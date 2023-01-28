@@ -44,10 +44,10 @@ void RemoraComms::init()
         PB12     ------> SPI2_NSS
         PB13     ------> SPI2_SCK
         PB14     ------> SPI2_MISO
-        PB15     ------> SPI2_MOSI
+        PB11     ------> SPI2_MOSI
         */
 
-        GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15;
+        GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_11;
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -57,7 +57,7 @@ void RemoraComms::init()
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        __HAL_RCC_SPI1_CLK_ENABLE();
+        __HAL_RCC_SPI2_CLK_ENABLE();
 
         this->spiHandle.Init.Mode           = SPI_MODE_SLAVE;
         this->spiHandle.Init.Direction      = SPI_DIRECTION_2LINES;
@@ -89,7 +89,7 @@ void RemoraComms::init()
  
         printf("Initialising DMA for SPI\n");
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_GPIOB_CLK_ENABLE();
         __HAL_RCC_DMA1_CLK_ENABLE();
 
         this->hdma_spi_tx.Instance                   = DMA1_Channel3;

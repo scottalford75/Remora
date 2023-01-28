@@ -487,7 +487,7 @@ int main()
 
                 // wait for threads to read IO before testing for PRUreset
                 //wait(1);
-                ThisThread::sleep_for(1000);
+                ThisThread::sleep_for(100);
             }
 
             if (PRUreset)
