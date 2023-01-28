@@ -147,7 +147,7 @@ volatile uint16_t* ptrOutputs;
 
 #elif defined TARGET_MANTA8
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_8);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_15);    // use PC_6 as "slave select"
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PB_12);    // use PB_12 as "slave select"
 
 #endif
 
@@ -227,7 +227,7 @@ void setup()
     blockDevice.deinit();
     #endif
 
-    #if defined TARGET_SKR_MINI_E3
+    #if defined TARGET_SKR_MINI_E3 | TARGET_MANTA8
     // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
@@ -432,7 +432,7 @@ int main()
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-    printf("\nRemora PRU - Programmable Realtime Unit SPIDER BOOTLOADER TEST 2 \n");
+    printf("\nRemora PRU - Programmable Realtime Unit MANTA8 TEST \n");
 
     watchdog.start(2000);
 

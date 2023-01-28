@@ -127,9 +127,47 @@ typedef enum {
     PD_6       = 0x36,
     PD_8       = 0x38,
     PD_9       = 0x39,
-    PF_0       = 0x50,
-    PF_1       = 0x51,
-    PF_2       = 0x52,
+    PD_10 = 0x3A,
+    PD_11 = 0x3B,
+    PD_12 = 0x3C,
+    PD_13 = 0x3D,
+    PD_14 = 0x3E,
+    PD_15 = 0x3F,
+
+    PE_0  = 0x40,
+    PE_1  = 0x41,
+    PE_2  = 0x42,
+    PE_3  = 0x43,
+    PE_4  = 0x44,
+    PE_5  = 0x45,
+    PE_6  = 0x46,
+    PE_7  = 0x47,
+    PE_8  = 0x48,
+    PE_9  = 0x49,
+    PE_10 = 0x4A,
+    PE_11 = 0x4B,
+    PE_12 = 0x4C,
+    PE_13 = 0x4D,
+    PE_14 = 0x4E,
+    PE_15 = 0x4F,
+
+    PF_0  = 0x50,
+    PF_1  = 0x51,
+    PF_2  = 0x52,
+    PF_3  = 0x53,
+    PF_4  = 0x54,
+    PF_5  = 0x55,
+    PF_6  = 0x56,
+    PF_7  = 0x57,
+    PF_8  = 0x58,
+    PF_9  = 0x59,
+    PF_10 = 0x5A,
+    PF_11 = 0x5B,
+    PF_12 = 0x5C,
+    PF_13 = 0x5D,
+    PF_14 = 0x5E,
+    PF_15 = 0x5F,
+  
 
     /**** ADC internal channels ****/
 
@@ -142,12 +180,12 @@ typedef enum {
 #ifdef MBED_CONF_TARGET_STDIO_UART_TX
     CONSOLE_TX = MBED_CONF_TARGET_STDIO_UART_TX,
 #else
-    CONSOLE_TX = PA_2,
+    CONSOLE_TX = PE_8,
 #endif
 #ifdef MBED_CONF_TARGET_STDIO_UART_RX
     CONSOLE_RX = MBED_CONF_TARGET_STDIO_UART_RX,
 #else
-    CONSOLE_RX = PA_3,
+    CONSOLE_RX = PE_9,
 #endif
 
     /**** USB pins ****/

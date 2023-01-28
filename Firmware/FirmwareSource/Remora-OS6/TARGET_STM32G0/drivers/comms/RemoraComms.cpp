@@ -12,7 +12,7 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
 {
     this->spiHandle.Instance = this->spiType;
 
-    if (this->interruptPin == PA_4)
+    if (this->interruptPin == PB_12)
     {
         // interrupt pin is the NSS pin
         sharedSPI = false;
@@ -34,28 +34,28 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
 
 void RemoraComms::init()
 {
-    if(this->spiHandle.Instance == SPI1)
+    if(this->spiHandle.Instance == SPI2)
     {
-        printf("Initialising SPI1 slave\n");
+        printf("Initialising SPI2 slave\n");
 
         GPIO_InitTypeDef GPIO_InitStruct;
 
         /**SPI1 GPIO Configuration
-        PA4     ------> SPI1_NSS
-        PA5     ------> SPI1_SCK
-        PA6     ------> SPI1_MISO
-        PA7     ------> SPI1_MOSI
+        PB12     ------> SPI2_NSS
+        PB13     ------> SPI2_SCK
+        PB14     ------> SPI2_MISO
+        PB15     ------> SPI2_MOSI
         */
 
-        GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7;
+        GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15;
         GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_6;
+        GPIO_InitStruct.Pin = GPIO_PIN_14;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         __HAL_RCC_SPI1_CLK_ENABLE();
 

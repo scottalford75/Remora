@@ -11,21 +11,25 @@
             "STM32G0B1xx"
         ],
         "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
-        "config": {     "hse_value": {
+        "config": {"hse_value": {
                 "help": "HSE default value is 8MHz in stm32g4xx_hal_conf.h",
                 "value": "8000000",
                 "macro_name": "HSE_VALUE"
             }
      
         },
+        "device_has_remove": ["LPTICKER"],
+    
          "overrides": { "lse_available": 0 ,
-            "clock_source": "USE_PLL_HSE_XTAL"
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI",
+        "tickless-from-us-ticker": true
          },
         "device_has_add": [
             "ANALOGOUT",
             "SD"
         ],
-        "device_name": "STM32G0B1RETx"
+        "device_name": "STM32G0B1RETx",
+        "bootloader_supported": true
     },
   
     "SKRV2": {
