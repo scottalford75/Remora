@@ -30,7 +30,7 @@
 #include "stm32g0xx.h"
 #include "mbed_error.h"
 
-#define VECT_TAB_OFFSET  0x0000 /*!< Vector Table base offset field.
+#define VECT_TAB_OFFSET  0x2000 /*!< Vector Table base offset field.
                                    This value must be a multiple of 0x200. */
 
 // clock source is selected with CLOCK_SOURCE in json config
