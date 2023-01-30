@@ -16,7 +16,8 @@
             "SD"
         ],
               "device_has_remove": ["LPTICKER"],
-        "device_name": "STM32G0B1RETx"
+        "device_name": "STM32G0B1RETx",
+        "bootloader_supported": true
     },
 
     "SKRV2": {
