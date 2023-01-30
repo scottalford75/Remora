@@ -23,7 +23,7 @@
             "target.components_add" : ["SD"]
         },
         "MANTA8": {
-            "target.mbed_app_start": "0x08002000",
+       
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PE_8",
             "target.stdio_uart_rx": "PE_9",

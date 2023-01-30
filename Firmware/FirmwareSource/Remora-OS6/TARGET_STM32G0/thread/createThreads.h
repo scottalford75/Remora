@@ -11,8 +11,8 @@ void createThreads(void)
     NVIC_SetVector(TIM1_BRK_UP_TRG_COM_IRQn, (uint32_t)TIM1_IRQHandler);
     NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 2);
 
-    servoThread = new pruThread(TIM2, TIM2_IRQn , servo_freq);
-    NVIC_SetVector(TIM2_IRQn , (uint32_t)TIM2_IRQHandler);
+    servoThread = new pruThread(TIM2, TIM2_IRQn, servo_freq);
+    NVIC_SetVector(TIM2_IRQn, (uint32_t)TIM2_IRQHandler);
     NVIC_SetPriority(TIM2_IRQn , 3);
 
     commsThread = new pruThread(TIM3, TIM3_TIM4_IRQn, PRU_COMMSFREQ);
