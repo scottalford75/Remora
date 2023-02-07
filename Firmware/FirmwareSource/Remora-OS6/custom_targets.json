@@ -20,6 +20,36 @@
         "bootloader_supported": true
     },
 
+      "SKRV3": {
+        "inherits": [
+            "MCU_STM32H743xI"
+        ],
+        "extra_labels_add": ["STM32H743xI"],
+        "config": {
+            "hse_value": {
+                "help": "HSE default value is 25MHz in HAL",
+                "value": "25000000",
+                "macro_name": "HSE_VALUE"
+            }
+        },
+        "overrides": {
+            "clock_source": "USE_PLL_HSE_XTAL",
+            "lse_available": 0
+        },
+        "macros_add": [
+            "STM32H743xx"
+        ],
+        "device_has_add": [
+            "FLASH",
+            "SERIAL_ASYNCH",
+            "MPU"
+        ],
+        
+        "device_name": "STM32H743VITx"
+    },
+
+
+
     "SKRV2": {
         "inherits": ["MCU_STM32F4"],
         "extra_labels_add": [
