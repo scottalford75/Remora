@@ -22,7 +22,7 @@ HardwarePWM::HardwarePWM(volatile float &ptrPwmPulseWidth, int pwmPeriod, std::s
     this->pwmPin = dummyPin->hardware_pwm();
 
     if (this->pwmPin == NULL) {
-        printf("  Error: Hardware PWM cannot this pin (P2.0 - P2.5, P1.18, P1.20, P1.21, P1.23, P1.24, P1.26, P3.25, P3.26 only)\n");
+        printf("  Error: Hardware PWM cannot this pin (Refer to Hardware Documents for Pin Information)\n");
         delete dummyPin;
         return;
     }
@@ -50,7 +50,7 @@ HardwarePWM::HardwarePWM(volatile float &ptrPwmPeriod, volatile float &ptrPwmPul
     this->pwmPin = dummyPin->hardware_pwm();
 
     if (this->pwmPin == NULL) {
-        printf("  Error: Hardware PWM cannot this pin (P2.0 - P2.5, P1.18, P1.20, P1.21, P1.23, P1.24, P1.26, P3.25, P3.26 only)\n");
+        printf("  Error: Hardware PWM cannot this pin (Refer to Hardware Documents for Pin Information)\n");
         delete dummyPin;
         return;
     }

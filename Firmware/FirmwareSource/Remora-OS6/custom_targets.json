@@ -19,7 +19,33 @@
         "device_name": "STM32G0B1RETx",
         "bootloader_supported": true
     },
-
+    "SKRV3": {
+        "inherits": [
+            "MCU_STM32H743xI"
+        ],
+        "extra_labels_add": ["STM32H743xI"],
+        "config": {
+            "hse_value": {
+                "help": "HSE default value is 25MHz in HAL",
+                "value": "25000000",
+                "macro_name": "HSE_VALUE"
+            }
+        },
+        "overrides": {
+            "clock_source": "USE_PLL_HSE_XTAL",
+            "lse_available": 0
+        },
+        "macros_add": [
+            "STM32H743xx"
+        ],
+        "device_has_add": [
+            "FLASH",
+            "SERIAL_ASYNCH",
+            "MPU"
+        ],
+        
+        "device_name": "STM32H743VITx"
+    },
     "SKRV2": {
         "inherits": ["MCU_STM32F4"],
         "extra_labels_add": [
@@ -73,39 +99,6 @@
         "bootloader_supported": true
      
     },
-     
-    "ROBIN_3": {
-        "inherits": ["MONSTER8"]
-     
-    },
-    "SPIDER_KING": {
-        "inherits": ["MCU_STM32F4"],
-        "extra_labels_add": [
-            "STM32F4",
-            "STM32F407",
-            "STM32F407xG",
-            "STM32F407ZG"
-        ],
-        "macros_add": [
-            "STM32F407xx"
-        ],
-        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
-
-        "overrides": { "lse_available": 0 ,
-        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
-        "device_has_add": [
-            "ANALOGOUT",
-            "CAN",
-            "SERIAL_ASYNCH",
-            "TRNG",
-            "FLASH",
-            "MPU"
-        ],
-        "device_name": "STM32F407ZGTx",
-        "bootloader_supported": true
-
-    }, 
-
     "OCTOPUS_429": {
         "inherits": ["MCU_STM32F4"],
         "core": "Cortex-M4F",
@@ -194,6 +187,31 @@
         "device_name": "STM32F446VETx",
         "bootloader_supported": true
         
+    },
+    "SKR_MINI_E3": {
+        "inherits": ["MCU_STM32F1"],
+        "c_lib": "std",
+        "core": "Cortex-M3",
+        "extra_labels_add": ["STM32F103xC"],
+        "macros_add": ["STM32F103xE"],
+        "supported_toolchains": ["ARMC6"],
+
+        "device_has_add": [
+            "CAN",
+            "SERIAL_ASYNCH",
+            "FLASH",
+            "CRC",
+            "SD",
+            "PWM"
+        ],
+
+        "overrides": {
+            "tickless-from-us-ticker": true,
+            "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"
+        },
+        "device_name": "STM32F103RC",
+		"bootloader_supported": true
     }
+
 
 }
