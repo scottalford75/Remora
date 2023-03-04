@@ -78,8 +78,8 @@
         "extra_labels_add": [
             "STM32F4",
             "STM32F407",
-            "STM32F407xG",
-            "STM32F407VG"
+            "STM32F407xE",
+            "STM32F407VE"
         ],
         "macros_add": [
             "STM32F407xx"
@@ -95,8 +95,32 @@
             "TRNG",
             "MPU"
         ],
-        "device_name": "STM32F407VGTx",
-        "bootloader_supported": true
+        "device_name": "STM32F407VETx"
+
+    },
+    "ROBIN_3": {
+        "inherits": ["MCU_STM32F4"],
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F407",
+            "STM32F407xE",
+            "STM32F407VE"
+        ],
+        "macros_add": [
+            "STM32F407xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "MPU"
+        ],
+        "device_name": "STM32F407VETx"
      
     },
     "OCTOPUS_429": {

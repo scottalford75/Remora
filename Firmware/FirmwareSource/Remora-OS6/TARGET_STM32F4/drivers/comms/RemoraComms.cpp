@@ -18,6 +18,13 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         sharedSPI = false;
         HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
     }
+    else if (this->interruptPin == PE_10)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI15_10_IRQn , 5, 0);
+    }
     else if (this->interruptPin == PC_6)
     {
         // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
@@ -25,6 +32,7 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         sharedSPI = true;
         HAL_NVIC_SetPriority(EXTI9_5_IRQn , 5, 0);
     }
+
 
     slaveSelect.rise(callback(this, &RemoraComms::processPacket));
 }
