@@ -492,7 +492,8 @@ int main()
 
                 // wait for threads to read IO before testing for PRUreset
                 //wait(1);
-                ThisThread::sleep_for(100);
+                //ThisThread::sleep_for(100);
+                wait_us(1000000);
             }
 
             if (PRUreset)
@@ -623,7 +624,9 @@ int main()
             break;
       }
 
-    ThisThread::sleep_for(LOOP_TIME);
+    //ThisThread::sleep_for(LOOP_TIME);
     //wait(LOOP_TIME);
+    wait_us(LOOP_TIME * 1000);
+
     }
 }
