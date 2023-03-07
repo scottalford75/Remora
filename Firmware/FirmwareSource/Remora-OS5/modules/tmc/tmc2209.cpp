@@ -63,6 +63,7 @@ TMC2209::TMC2209(std::string rxtxPin, float Rsense, uint8_t addr, uint16_t mA, u
     addr(addr),
     stall(stall)
 {
+    this->Rsense = Rsense;
     this->driver = new TMC2209Stepper(this->rxtxPin, this->rxtxPin, this->Rsense, this->addr);
 }
 
