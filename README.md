@@ -3,7 +3,7 @@
 Things on the go but arent working:
   - SKR3 STM32H743 : starts with the bootloader and then everything else
   - MANTA M8P STM32G0B1 : almost everything working , dmamux and comms thing i dont understand
-  - MKS MONSTER8/ROBIN V3.1/SKIPR STM32F407 : With bootloader, bootloader is turning off spi after boot. Without bootloader, SDcard on spi3 only works every other powercycle
+  - MKS MONSTER8/ROBIN V3.1/SKIPR STM32F407 : With bootloader, bootloader is turning off spi after boot. Without bootloader, it works
 
 Things working now:
 - BTT Octopus STM32F446 working, with bootloader
