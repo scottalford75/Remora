@@ -2,7 +2,7 @@
 * Description:  PRUencoder.c
 *
 *               This file, 'PRUencoder.c', is a HAL component that
-*               provides an interface to the spiPRU raw encoder count.
+*               provides an interface to the RemoraPRU raw encoder count.
 *
 *
 * Author: Scott Alford

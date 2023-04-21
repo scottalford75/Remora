@@ -1,7 +1,7 @@
 # Include your custom_postgui HAL commands here
 # This file will not be overwritten when you run stepconf again
 
-# spiPRU command outputs
+# remora command outputs
 
 net bed-SP  	=> pyvcp.bed-SP
 net ext0-SP  	=> pyvcp.ext0-SP
@@ -9,7 +9,7 @@ net ext0-fan-SP => pyvcp.ext0-fan-SP
 net BLtouch-SP 	=> pyvcp.BLtouch-SP
 
 
-# spiPRU command feedbacks
+# remora command feedbacks
 
 net bed-PV 	=> pyvcp.bed-PV
 net ext0-PV 	=> pyvcp.ext0-PV

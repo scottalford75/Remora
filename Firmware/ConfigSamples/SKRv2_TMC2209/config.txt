@@ -7,6 +7,12 @@
 		"Comment":			"Reset pin",
 		"Pin":				"PC_4"
 	},
+		{
+	"Thread": "On load",
+	"Type": "Motor Power",
+		"Comment": "Enable motor power SKR2",
+		"Pin":					 "PC_13"
+	},
 	{
 	"Thread": "Base",
 	"Type": "Stepgen",
@@ -18,9 +24,8 @@
 	},
 	{
 	"Thread": "On load",
-	"Type": "TMC stepper",
+	"Type": "TMC2209",
 		"Comment":			"X - Joint 0 TMC driver",
-		"Driver": 			"2209",
 		"RX pin": 			"PE_0",
 		"RSense":			0.11,
 		"Current":			800,
@@ -39,9 +44,8 @@
 	},
 	{
 	"Thread": "On load",
-	"Type": "TMC stepper",
+	"Type": "TMC2209",
 		"Comment":			"Y - Joint 1 TMC driver",
-		"Driver": 			"2209",
 		"RX pin": 			"PD_3",
 		"RSense":			0.11,
 		"Current":			800,
@@ -60,9 +64,8 @@
 	},
 	{
 	"Thread": "On load",
-	"Type": "TMC stepper",
+	"Type": "TMC2209",
 		"Comment":			"Z - Joint 2 TMC driver",
-		"Driver": 			"2209",
 		"RX pin": 			"PD_0",
 		"RSense":			0.11,
 		"Current":			800,
@@ -81,9 +84,8 @@
 	},
 	{
 	"Thread": "On load",
-	"Type": "TMC stepper",
+	"Type": "TMC2209",
 		"Comment":			"E0 - Joint 3 TMC driver",
-		"Driver": 			"2209",
 		"RX pin": 			"PC_6",
 		"RSense":			0.11,
 		"Current":			800,
@@ -102,9 +104,8 @@
 	},
 	{
 	"Thread": "On load",
-	"Type": "TMC stepper",
+	"Type": "TMC2209",
 		"Comment":			"E1 - Joint 4 TMC driver",
-		"Driver": 			"2209",
 		"RX pin": 			"PD_12",
 		"RSense":			0.11,
 		"Current":			800,

@@ -1,4 +1,6 @@
 #include "pwm.h"
+#include "hardwarePwm.h"
+
 
 #define PID_PWM_MAX 256		// 8 bit resolution
 
@@ -32,14 +34,14 @@ void createPWM()
             // Variable frequency hardware PWM
             ptrSetPoint[period_sp] = &rxData.setPoint[period_sp];
 
-            //Module* pwm = new HardwarePWM(*ptrSetPoint[period_sp], *ptrSetPoint[sp], period, pin);
-            //servoThread->registerModule(pwm);
+            Module* pwm = new HardwarePWM(*ptrSetPoint[period_sp], *ptrSetPoint[sp], period, pin);
+            servoThread->registerModule(pwm);
         }
         else
         {
             // Fixed frequency hardware PWM
-            //Module* pwm = new HardwarePWM(*ptrSetPoint[sp], period, pin);
-            //servoThread->registerModule(pwm);
+            Module* pwm = new HardwarePWM(*ptrSetPoint[sp], period, pin);
+            servoThread->registerModule(pwm);
         }
     }
     else
