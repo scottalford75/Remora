@@ -1,0 +1,62 @@
+[GUI_OPTIONS]
+Font size = 10
+Foreground color = #000000
+Background color = #d9d9d9
+Disabled color = #a3a3a3
+Active color = #00cc00
+Warning color = #dd0000
+Voltage color = #0000ff
+Exit warning = True
+Window size = small
+Window screen = maximized
+Hide Max Jog. Slider = False
+Hide Max Rapid. Slider = True
+Hide Max Velocity Slider = True
+Show Button Label = False
+Load last file = False
+Hide Button Frame = True
+Window last = 800x386+0+94
+
+[STATISTICS]
+Program run time = 0
+
+[BUTTONS]
+1 Name = 
+1 Code = 
+2 Name = 
+2 Code = 
+3 Name = 
+3 Code = 
+4 Name = 
+4 Code = 
+5 Name = 
+5 Code = 
+6 Name = 
+6 Code = 
+7 Name = 
+7 Code = 
+8 Name = 
+8 Code = 
+9 Name = 
+9 Code = 
+10 Name = 
+10 Code = 
+11 Name = 
+11 Code = 
+12 Name = 
+12 Code = 
+13 Name = 
+13 Code = 
+14 Name = 
+14 Code = 
+15 Name = 
+15 Code = 
+16 Name = 
+16 Code = 
+17 Name = 
+17 Code = 
+18 Name = 
+18 Code = 
+19 Name = 
+19 Code = 
+
