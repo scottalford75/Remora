@@ -121,8 +121,35 @@
             "MPU"
         ],
         "device_name": "STM32F407VETx"
-     
     },
+    
+    "SPIDER_KING": {
+        "inherits": ["MCU_STM32F4"],
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F407",
+            "STM32F407xG",
+            "STM32F407ZG"
+        ],
+        "macros_add": [
+            "STM32F407xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "FLASH",
+            "MPU"
+        ],
+        "device_name": "STM32F407ZGTx",
+        "bootloader_supported": true
+
+    }, 
     "OCTOPUS_429": {
         "inherits": ["MCU_STM32F4"],
         "core": "Cortex-M4F",
