@@ -212,6 +212,30 @@
         "bootloader_supported": true
         
     },
+        "ROBIN_E3": {
+        "inherits": ["MCU_STM32F1"],
+        "c_lib": "std",
+        "core": "Cortex-M3",
+        "extra_labels_add": ["STM32F103xC"],
+        "macros_add": ["STM32F103xE"],
+        "supported_toolchains": ["ARMC6"],
+
+        "device_has_add": [
+            "CAN",
+            "SERIAL_ASYNCH",
+            "FLASH",
+            "CRC",
+            "SD",
+            "PWM"
+        ],
+
+        "overrides": {
+            "tickless-from-us-ticker": true,
+            "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"
+        },
+        "device_name": "STM32F103RC",
+		"bootloader_supported": true
+    },
     "SKR_MINI_E3": {
         "inherits": ["MCU_STM32F1"],
         "c_lib": "std",

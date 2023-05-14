@@ -626,7 +626,7 @@ int main()
 
     //ThisThread::sleep_for(LOOP_TIME);
     //wait(LOOP_TIME);
-    wait_us(LOOP_TIME * 1000);
+    wait_us(LOOP_TIME * 1000000);
 
     }
 }

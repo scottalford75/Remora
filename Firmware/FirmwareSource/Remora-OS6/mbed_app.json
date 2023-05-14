@@ -113,7 +113,19 @@
             "target.stdio_uart_rx": "PA_10",
             "target.features_add": ["STORAGE"],
             "target.components_add" : ["SD"]
-        }        ,
+        },
+             "ROBIN_E3": {
+            "target.mbed_app_start": "0x08005000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "sd.SPI_MOSI": "PB_15",
+            "sd.SPI_MISO": "PB_14",
+            "sd.SPI_CLK":  "PB_13",
+            "sd.SPI_CS":   "PA_15",
+            "target.components_add" : ["SD"]
+        },
         "SKR_MINI_E3": {
             "target.mbed_app_start": "0x08007000",
             "platform.stdio-baud-rate": 115200,
