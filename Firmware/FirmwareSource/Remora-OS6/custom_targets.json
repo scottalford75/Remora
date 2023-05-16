@@ -128,8 +128,8 @@
         "extra_labels_add": [
             "STM32F4",
             "STM32F407",
-            "STM32F407xG",
-            "STM32F407ZG"
+            "STM32F407xE",
+            "STM32F407ZE"
         ],
         "macros_add": [
             "STM32F407xx"
@@ -146,8 +146,7 @@
             "FLASH",
             "MPU"
         ],
-        "device_name": "STM32F407ZGTx",
-        "bootloader_supported": true
+        "device_name": "STM32F407ZETx"
 
     }, 
     "OCTOPUS_429": {
