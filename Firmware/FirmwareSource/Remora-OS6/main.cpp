@@ -148,7 +148,7 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
 
-#elif defined TARGET_SPIDER || TARGET_SPIDER_KING
+#elif defined TARGET_SPIDER_KING
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_12);    // use PB_12 as "slave select" on SPI2
 
