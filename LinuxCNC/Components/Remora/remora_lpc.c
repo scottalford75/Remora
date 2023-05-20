@@ -1,11 +1,10 @@
 /********************************************************************
-* Description:  remora.c
+* Description:  remora_lpc.c
 *               This file, 'remora.c', is a HAL component that
-*               provides and SPI connection to a external STM32 running Remora PRU firmware.
+*               provides and SPI connection to a external LPC1768 running Remora PRU firmware.
 *  				
 *				Initially developed for RaspberryPi -> Arduino Due.
 *				Further developed for RaspberryPi -> Smoothieboard and clones (LPC1768).
-                Even further developed for RaspberryPi -> STM32 boards
 *
 * Author: Scott Alford
 * License: GPL Version 2
@@ -34,18 +33,18 @@
 
 // Using BCM2835 driver library by Mike McCauley, why reinvent the wheel!
 // http://www.airspayce.com/mikem/bcm2835/index.html
-// Include these in the source directory when using "halcompile --install remora.c"
+// Include these in the source directory when using "halcompile --install remora_lpc.c"
 #include "bcm2835.h"
 #include "bcm2835.c"
 
 #include "remora.h"
 
 
-#define MODNAME "remora"
+#define MODNAME "remora_lpc"
 #define PREFIX "remora"
 
 MODULE_AUTHOR("Scott Alford AKA scotta");
-MODULE_DESCRIPTION("Driver for Remora STM32 control board");
+MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
 MODULE_LICENSE("GPL v2");
 
 
@@ -88,7 +87,7 @@ typedef struct {
 static data_t *data;
 
 
-#pragma pack(push, 1)
+//#pragma pack(push, 1)
 
 typedef union
 {
@@ -127,7 +126,7 @@ typedef union
   };
 } rxData_t;
 
-#pragma pack(pop)
+//#pragma pack(pop)
 
 static txData_t txData;
 static rxData_t rxData;
@@ -153,10 +152,10 @@ char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
 enum CHIP { LPC, STM } chip;
-char *chip_type = { "STM" }; //default to STM
+char *chip_type = { "LPC" }; //default to LPC
 RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
-int SPI_clk_div = 32;
+int SPI_clk_div = -1;
 RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
 
 int PRU_base_freq = -1;
@@ -215,7 +214,7 @@ int rtapi_app_main(void)
 	// check to see if the PRU base frequency has been set at the command line
 	if (PRU_base_freq != -1)
 	{
-		if ((PRU_base_freq < 40000) || (PRU_base_freq > 240000))
+		if ((PRU_base_freq < 40000) || (PRU_base_freq > 120000))
 		{
 			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU base frequency incorrect\n");
 			return -1;
