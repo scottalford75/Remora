@@ -75,6 +75,18 @@
             "sd.SPI_CS":   "PC_9",
             "target.components_add" : ["SD"]
         },
+        "SPIDER_KING": {
+           
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"],
+            "sd.SPI_MOSI": "PA_7",
+            "sd.SPI_MISO": "PA_6",
+            "sd.SPI_CLK":  "PA_5",
+            "sd.SPI_CS":   "PA_4",
+            "target.components_add" : ["SD"]
+        },
         "OCTOPUS_429": {
             "target.mbed_app_start": "0x08008000",
             "platform.stdio-baud-rate": 115200,
