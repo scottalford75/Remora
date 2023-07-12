@@ -1,10 +1,11 @@
 /********************************************************************
 * Description:  remora.c
 *               This file, 'remora.c', is a HAL component that
-*               provides and SPI connection to a external LPC1768 running Remora PRU firmware.
+*               provides and SPI connection to a external STM32 running Remora PRU firmware.
 *  				
 *				Initially developed for RaspberryPi -> Arduino Due.
 *				Further developed for RaspberryPi -> Smoothieboard and clones (LPC1768).
+                Even further developed for RaspberryPi -> STM32 boards
 *
 * Author: Scott Alford
 * License: GPL Version 2
@@ -44,7 +45,7 @@
 #define PREFIX "remora"
 
 MODULE_AUTHOR("Scott Alford AKA scotta");
-MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
+MODULE_DESCRIPTION("Driver for Remora STM32 control board");
 MODULE_LICENSE("GPL v2");
 
 
@@ -152,10 +153,10 @@ char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
 enum CHIP { LPC, STM } chip;
-char *chip_type = { "LPC" }; //default to LPC
+char *chip_type = { "STM" }; //default to STM
 RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
-int SPI_clk_div = -1;
+int SPI_clk_div = 32;
 RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
 
 int PRU_base_freq = -1;
@@ -214,7 +215,7 @@ int rtapi_app_main(void)
 	// check to see if the PRU base frequency has been set at the command line
 	if (PRU_base_freq != -1)
 	{
-		if ((PRU_base_freq < 40000) || (PRU_base_freq > 120000))
+		if ((PRU_base_freq < 40000) || (PRU_base_freq > 240000))
 		{
 			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU base frequency incorrect\n");
 			return -1;
@@ -312,7 +313,7 @@ int rtapi_app_main(void)
 	bcm2835_gpio_set_pud(RPI_GPIO_P1_21, BCM2835_GPIO_PUD_DOWN);	// MISO
 	bcm2835_gpio_set_pud(RPI_GPIO_P1_24, BCM2835_GPIO_PUD_UP);		// CS0
 
-	// export spiPRU SPI enable and status bits
+	// export remoraPRU SPI enable and status bits
 	retval = hal_pin_bit_newf(HAL_IN, &(data->SPIenable),
 			comp_id, "%s.SPI-enable", prefix);
 	if (retval != 0) goto error;

@@ -250,7 +250,7 @@ int rtapi_app_main(void)
 		return -1;
 	}
 
-	// export spiPRU SPI enable and status bits
+	// export RemoraPRU SPI enable and status bits
 	retval = hal_pin_bit_newf(HAL_IN, &(data->SPIenable),
 			comp_id, "%s.SPI-enable", prefix);
 	if (retval != 0) goto error;

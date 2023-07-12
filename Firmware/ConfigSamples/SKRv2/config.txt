@@ -8,6 +8,12 @@
 		"Pin":				"PC_4"
 	},
 	{
+	"Thread": "On load",
+	"Type": "Motor Power",
+		"Comment": "Enable motor power SKR2",
+		"Pin":					 "PC_13"
+	},
+	{
 	"Thread": "Base",
 	"Type": "Stepgen",
 		"Comment":			"X - Joint 0 step generator",
@@ -34,36 +40,7 @@
 		"Direction Pin": 	"PA_8",
 		"Enable Pin": 		"PD_1"
 	},
-	{
-	"Thread": "Base",
-	"Type": "Stepgen",
-		"Comment":			"E0 - Joint 3 step generator",
-		"Joint Number":		3,
-		"Step Pin": 		"PD_15",
-		"Direction Pin": 	"PD_14",
-		"Enable Pin": 		"PC_7"
-	},
-	{
-	"Thread": "Servo",
-	"Type": "Temperature",
-		"Comment": 			"Extruder tenperature sensor",
-		"PV[i]": 			0,
-		"Sensor": 			"Thermistor",
-			"Thermistor":
-			{
-				"Pin": 		"0.23",
-				"beta": 	3990,
-				"r0": 		100000,
-				"t0": 		25
-			}
-	},
-	{
-	"Thread": "Base",
-	"Type": "RCServo",
-		"Comment": 			"RC servo for probe",
-		"SP[i]": 			3,
-		"Servo Pin": 		"2.0"
-	},
+	
 	{
 	"Thread": "Servo",
 	"Type": "Digital Pin",
@@ -111,15 +88,7 @@
 		"Pin":				"PC_15",
 		"Mode":				"Input",
 		"Data Bit":			5
-	},
-	{
-	"Thread": "Servo",
-	"Type": "Switch",
-		"Comment":			"Extruder fan switch",
-		"Pin":				"PB_7",
-		"Mode":				"On",
-		"PV[i]":			0,
-		"SP":				25.5
+
 	}
 	]
 }
