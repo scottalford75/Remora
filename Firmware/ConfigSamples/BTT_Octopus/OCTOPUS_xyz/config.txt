@@ -1,0 +1,38 @@
+{
+	"Board": "BIGTREETECH OCTOPUS",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PC_15"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PF_13",
+		"Direction Pin": 	"PF_12",
+		"Enable Pin": 		"PF_14"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PG_0",
+		"Direction Pin": 	"PG_1",
+		"Enable Pin": 		"PF_15"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PF_11",
+		"Direction Pin": 	"PG_3",
+		"Enable Pin": 		"PG_5"
+	}
+	]
+}

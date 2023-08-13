@@ -1,0 +1,145 @@
+{
+	"Board": "FYSETC SPIDER",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PC_7"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X M1 - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PE_11",
+		"Direction Pin": 	"PE_10",
+		"Enable Pin": 		"PE_9"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y M2 - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PD_8",
+		"Direction Pin": 	"PB_12",
+		"Enable Pin": 		"PD_9"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z M3 - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PD_14",
+		"Direction Pin": 	"PD_13",
+		"Enable Pin": 		"PD_15"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E0 M4 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"PD_5",
+		"Direction Pin": 	"PD_6",
+		"Enable Pin": 		"PD_4"
+	},
+		{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E1 M5 - Joint 4 step generator",
+		"Joint Number":		4,
+		"Step Pin": 		"PE_6",
+		"Direction Pin": 	"PC_13",
+		"Enable Pin": 		"PE_5"
+	},
+		{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E2 M6 - Joint 5 step generator",
+		"Joint Number":		5,
+		"Step Pin": 		"PE_2",
+		"Direction Pin": 	"PE_4",
+		"Enable Pin": 		"PE_3"
+	},
+		{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E3 M7 - Joint 6 step generator",
+		"Joint Number":		6,
+		"Step Pin": 		"PD_12",
+		"Direction Pin": 	"PC_4",
+		"Enable Pin": 		"PE_8"
+	},
+		{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E4 M8 - Joint 7 step generator",
+		"Joint Number":		7,
+		"Step Pin": 		"PE_1",
+		"Direction Pin": 	"PE_0",
+		"Enable Pin": 		"PC_5"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Extruder tenperature sensor",
+		"PV[i]": 			0,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"PC_0",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X min X-DIAG",
+		"Pin":				"PB_14",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X max E0-DIAG",
+		"Pin":				"PA_1",
+		"Mode":				"Input",
+		"Data Bit":			1
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y min Y-DIAG",
+		"Pin":				"PB_13",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y max E1-DIAG",
+		"Pin":				"PA_2",
+		"Mode":				"Input",
+		"Data Bit":			3
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z min Z-DIAG",
+		"Pin":				"PA_0",
+		"Mode":				"Input",
+		"Data Bit":			4
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z max E2-DIAG",
+		"Pin":				"PA_3",
+		"Mode":				"Input",
+		"Data Bit":			5
+	}
+	]
+}
