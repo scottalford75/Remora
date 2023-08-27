@@ -1,3 +1,11 @@
 ROOT=.
+<<<<<<< HEAD
 TARGET=SKRV2
 TARGET_CODE=custom-452
+=======
+<<<<<<< Updated upstream=undefined
+=
+>>>>>>> Stashed changes=undefined
+TARGET=MONSTER8
+TARGET_CODE=custom-406
+>>>>>>> os6-5160

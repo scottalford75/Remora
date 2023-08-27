@@ -7,14 +7,26 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
     ptrRxData(ptrRxData),
     ptrTxData(ptrTxData),
     spiType(spiType),
+    interruptPin(interruptPin), 
     slaveSelect(interruptPin)
 {
     this->spiHandle.Instance = this->spiType;
 
-    slaveSelect.rise(callback(this, &RemoraComms::processPacket));
+    if (this->interruptPin == PA_4)
+    {
+        // interrupt pin is the NSS pin
+        sharedSPI = false;
+        HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+    }
+    else if (this->interruptPin == PC_6)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI9_5_IRQn , 5, 0);
+    }
 
-    // Let the threads have higher priority
-    HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+    slaveSelect.rise(callback(this, &RemoraComms::processPacket));
 }
 
 
@@ -47,7 +59,15 @@ void RemoraComms::init()
         this->spiHandle.Init.DataSize       = SPI_DATASIZE_8BIT;
         this->spiHandle.Init.CLKPolarity    = SPI_POLARITY_LOW;
         this->spiHandle.Init.CLKPhase       = SPI_PHASE_1EDGE;
-        this->spiHandle.Init.NSS            = SPI_NSS_HARD_INPUT;
+        if (sharedSPI)
+        {
+            this->spiHandle.Init.NSS            = SPI_NSS_SOFT;
+            printf("SPI is shared with SD card\n");
+        }
+        else
+        {
+            this->spiHandle.Init.NSS            = SPI_NSS_HARD_INPUT;
+        } 
         this->spiHandle.Init.FirstBit       = SPI_FIRSTBIT_MSB;
         this->spiHandle.Init.TIMode         = SPI_TIMODE_DISABLE;
         this->spiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -55,6 +75,11 @@ void RemoraComms::init()
 
         HAL_SPI_Init(&this->spiHandle);
 
+        if (sharedSPI)
+        {
+            // set SSI (Slave Select Internal) low, ie same as NSS going low
+             CLEAR_BIT(this->spiHandle.Instance->CR1, SPI_CR1_SSI);
+        }
 
         printf("Initialising DMA for SPI\n");
 

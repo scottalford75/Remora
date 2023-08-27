@@ -24,9 +24,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X
+#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
 #include "SDBlockDevice.h"
-#elif defined TARGET_STM32F4
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
 #include "SDIOBlockDevice.h"
 #endif
 
@@ -94,8 +94,8 @@ pruThread* baseThread;
 pruThread* commsThread;
 
 // unions for RX and TX data
-volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moveing it to rxData
-volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moveing it to rxData
+//volatile rxData_t spiRxBuffer1;  // this buffer is used to check for valid data before moving it to rxData
+//volatile rxData_t spiRxBuffer2;  // this buffer is used to check for valid data before moving it to rxData
 volatile rxData_t rxData;
 volatile txData_t txData;
 
@@ -122,9 +122,29 @@ volatile uint8_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
+<<<<<<< HEAD
 #elif defined TARGET_SKRV2
+=======
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
+>>>>>>> os6-5160
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_MONSTER8
+    SDBlockDevice blockDevice(PC_12, PC_11, PC_10, PC_9);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_ROBIN_E3
+    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_15);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_SKR_MINI_E3
+    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
+
+#elif defined TARGET_SPIDER
+    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
 
 #endif
 
@@ -196,8 +216,15 @@ void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
+    // TODO: we can probably just deinit the blockdevice for all targets....?
+
     #if defined TARGET_STM32F4
-    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F
+    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
+    blockDevice.deinit();
+    #endif
+
+    #if defined TARGET_SKR_MINI_E3
+    // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
 
@@ -333,6 +360,31 @@ void loadModules()
 }
 
 
+void debugThreadHigh()
+{
+    //Module* debugOnB = new Debug("PC_1", 1);
+    //baseThread->registerModule(debugOnB);
+
+    //Module* debugOnS = new Debug("PC_3", 1);
+    //servoThread->registerModule(debugOnS);
+
+    //Module* debugOnC = new Debug("PE_6", 1);
+    //commsThread->registerModule(debugOnC);
+}
+
+void debugThreadLow()
+{
+    //Module* debugOffB = new Debug("PC_1", 0);
+    //baseThread->registerModule(debugOffB); 
+
+    //Module* debugOffS = new Debug("PC_3", 0);
+    //servoThread->registerModule(debugOffS);
+
+    //commsThread->startThread();
+    //Module* debugOffC = new Debug("PE_6", 0);
+    //commsThread->registerModule(debugOffC); 
+}
+
 int main()
 {
     
@@ -368,7 +420,15 @@ int main()
 
             readJsonConfig();
             setup();
+<<<<<<< HEAD
+=======
+            deserialiseJSON();
+            configThreads();
+            createThreads();
+            //debugThreadHigh();
+>>>>>>> os6-5160
             loadModules();
+            //debugThreadLow();
 
             currentState = ST_START;
             break; 

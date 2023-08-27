@@ -8,40 +8,50 @@
 
 # PID controllers for heaters
 
-	loadrt PIDcontroller names=PID-bed,PID-ext0
-	addf PID-bed.compute servo-thread
-	addf PID-ext0.compute servo-thread
+	loadrt pid names=PID-bed,PID-ext0
+	addf PID-ext0.do-pid-calcs servo-thread
+	addf PID-bed.do-pid-calcs servo-thread
 
 
-# configure z-compensation: note python version here. For Archlinux use "python2"
+# configure z-compensation
 
 	loadusr -Wn compensation python compensation.py probe-results.txt cubic
 
 	net xpos-cmd 		<= axis.x.pos-cmd		=> compensation.x-pos
 	net ypos-cmd 		<= axis.y.pos-cmd		=> compensation.y-pos
-	net zpos-cmd 		<= axis.z.pos-cmd		=> compensation.z-pos
+	net zpos-cmd 		<= halui.axis.z.pos-relative	=> compensation.z-pos
 	net eoffset-enable	<= compensation.enable-out	=> axis.z.eoffset-enable
 	net eoffset-scale	<= compensation.scale		=> axis.z.eoffset-scale
 	net eoffset-counts	<= compensation.counts 		=> axis.z.eoffset-counts
 	net eoffset-clear	<= compensation.clear 		=> axis.z.eoffset-clear
+	net compensation-on	<= compensation.enable-in
 
 # end-stops
 
 	net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
-	net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
-	net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
-	#net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
+	net Y-min 	remora.input.1 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in	
+	net X-max 	remora.input.3 	=> joint.0.pos-lim-sw-in
+	#net Y-max 	remora.input.4 	=> joint.1.pos-lim-sw-in
+
+# bed compensation
+
+	loadrt or2 count=1
+	addf or2.0 servo-thread
+	
+	net M120-on		=> or2.0.in0
+	net gui-bedcomp-on	=> or2.0.in1
+	net compensation-on	<= or2.0.out
 
 # touch probe and nozzle height setter
 
 	loadrt mux_generic config="bb2"
 	addf mux-gen.00 servo-thread
 
+	#net mux00		<= remora.input.6		=> mux-gen.00.in-bit-00
 	net mux00		<= remora.input.5		=> mux-gen.00.in-bit-00
-	net mux01		<= remora.input.4		=> mux-gen.00.in-bit-01
-	net mux-sel		<= motion.digital-out-00 => mux-gen.00.sel-bit-00
+	net mux01		<= remora.input.2		=> mux-gen.00.in-bit-01
+	net mux-sel		<= motion.digital-out-00 	=> mux-gen.00.sel-bit-00
 
-	#net Z-probe remora.input.5 => motion.probe-input
 	net probe		<= mux-gen.00.out-bit	=> motion.probe-input
 
 # remora command outputs
@@ -57,39 +67,31 @@
 	net bed-PV 		=> remora.PV.0
 	net ext0-PV 		=> remora.PV.1
 
+# extruder configuration
 
-## Bed PID configuration
+	setp remora.joint.4.pgain [JOINT_4]PGAIN
 
-	net remora-status 	=> PID-bed.auto
-	net bed-SP 		=> PID-bed.SP
-	net bed-PV 		=> PID-bed.PV
-	net bed-heater-SP 	=> PID-bed.CV
+# Bed PID configuration
 
-	setp PID-bed.pOnM 	[BED]PID_PONM
-	setp PID-bed.direction	[BED]PID_DIR
-	setp PID-bed.KP		[BED]PID_KP
-	setp PID-bed.KI		[BED]PID_KI
-	setp PID-bed.KD		[BED]PID_KD
-	setp PID-bed.SPmin	[BED]PID_SPMIN
-	setp PID-bed.SPmax	[BED]PID_SPMAX
-	setp PID-bed.CVmin	[BED]PID_CVMIN
-	setp PID-bed.CVmax	[BED]PID_CVMAX
+	net remora-status 		=> PID-bed.enable
+	net bed-SP 			=> PID-bed.command
+	net bed-PV 			=> PID-bed.feedback
+	net bed-heater-SP 		=> PID-bed.output
+
+	setp PID-bed.Pgain		[BED]PID_KP
+	setp PID-bed.Igain		[BED]PID_KI
+	setp PID-bed.Dgain		[BED]PID_KD
+	setp PID-bed.maxoutput		[BED]PID_MAX
 
 
 # Extruder 0 PID configuration
 
-	net remora-status 	=> PID-ext0.auto
-	net ext0-SP 		=> PID-ext0.SP
-	net ext0-PV 		=> PID-ext0.PV
-	net ext0-heater-SP 	=> PID-ext0.CV
+	net remora-status 		=> PID-ext0.enable
+	net ext0-SP 			=> PID-ext0.command
+	net ext0-PV 			=> PID-ext0.feedback
+	net ext0-heater-SP 		=> PID-ext0.output
 
-	setp PID-ext0.pOnM 	[EXT0]PID_PONM
-	setp PID-ext0.direction	[EXT0]PID_DIR
-	setp PID-ext0.KP	[EXT0]PID_KP
-	setp PID-ext0.KI	[EXT0]PID_KI
-	setp PID-ext0.KD	[EXT0]PID_KD
-	setp PID-ext0.SPmin	[EXT0]PID_SPMIN
-	setp PID-ext0.SPmax	[EXT0]PID_SPMAX
-	setp PID-ext0.CVmin	[EXT0]PID_CVMIN
-	setp PID-ext0.CVmax	[EXT0]PID_CVMAX
-
+	setp PID-ext0.Pgain		[EXT0]PID_KP
+	setp PID-ext0.Igain		[EXT0]PID_KI
+	setp PID-ext0.Dgain		[EXT0]PID_KD
+	setp PID-ext0.maxoutput 	[EXT0]PID_MAX

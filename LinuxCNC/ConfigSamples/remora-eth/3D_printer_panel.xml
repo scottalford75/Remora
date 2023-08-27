@@ -1,0 +1,116 @@
+<pyvcp>
+<labelframe text="3D Printer">
+<label>
+<text>"                                                 "</text>
+</label>
+<label>
+<text>" Heated Bed"</text>
+<fg>"red"</fg>
+<anchor>"w"</anchor>
+</label>
+<hbox>
+    <label>
+        <text>" Set temperature: "</text>
+	<anchor>"w"</anchor>
+    </label>
+    <number> 
+    	<halpin>"bed-SP"</halpin>
+    	<format>"3.1f"</format>
+	<width>"5"</width>
+    </number>
+    <label>
+        <text>"&#0176;C "</text>
+    </label>
+</hbox>
+<hbox>
+    <label>
+        <text>" Act temperature: "</text>
+	<anchor>"w"</anchor>
+    </label>
+    <number> 
+    	<halpin>"bed-PV"</halpin>
+    	<format>"3.1f"</format>
+	<width>"5"</width>
+    </number>
+    <label>
+        <text>"&#0176;C "</text>
+    </label>
+</hbox>
+<label>
+<text>"                                                 "</text>
+</label>
+<label>
+<text>" Extruder 0"</text>
+<fg>"red"</fg>
+<anchor>"w"</anchor>
+</label>
+<hbox>
+    <label>
+        <text>" Set temperature: "</text>
+    </label>
+    <number> 
+    	<halpin>"ext0-SP"</halpin>
+    	<format>"3.1f"</format>
+	<width>"5"</width>
+    </number>
+    <label>
+        <text>"&#0176;C "</text>
+    </label>
+</hbox>
+<hbox>
+    <label>
+        <text>" Act temperature: "</text>
+    </label>
+    <number> 
+    	<halpin>"ext0-PV"</halpin>
+    	<format>"3.1f"</format>
+	<width>"5"</width>
+    </number>
+    <label>
+        <text>"&#0176;C "</text>
+    </label>
+</hbox>
+<label>
+<text>"                                                 "</text>
+</label>
+<label>
+<text>" Cooling Fan"</text>
+<fg>"blue"</fg>
+<anchor>"w"</anchor>
+</label>
+<hbox>
+    <label>
+        <text>" Fan speed: "</text>
+    </label>
+    <number> 
+    	<halpin>"ext0-fan-SP"</halpin>
+    	<format>"3.0f"</format>
+    </number>
+</hbox>
+<label>
+<text>"   "</text>
+</label>
+<label>
+<text>" Probe"</text>
+<fg>"blue"</fg>
+<anchor>"w"</anchor>
+</label>
+<hbox>
+    <label>
+        <text>" Position: "</text>
+    </label>
+    <number> 
+    	<halpin>"BLtouch-SP"</halpin>
+    	<format>"3.0f"</format>
+    </number>
+</hbox>
+<label>
+<text>"   "</text>
+</label>
+       <button>
+         <halpin>"PRUreset"</halpin>
+         <bd>3</bd>
+         <text>"PRU Reset"</text>
+       </button>
+</labelframe>
+</pyvcp>

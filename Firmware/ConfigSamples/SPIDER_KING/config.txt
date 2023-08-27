@@ -1,0 +1,11 @@
+{
+	"Board": "FYSETC SPIDER KING",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PB_11"
+	}
+	]
+}
