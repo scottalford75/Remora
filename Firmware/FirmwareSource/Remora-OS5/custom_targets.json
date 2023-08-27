@@ -34,6 +34,8 @@
         ],
         "device_name": "STM32F407VGTx",
         "bootloader_supported": true
+<<<<<<< HEAD
+=======
     },
     "OCTOPUS_429": {
         "inherits": ["FAMILY_STM32"],
@@ -166,5 +168,6 @@
         },
         "device_name": "STM32F103RC",
 		"bootloader_supported": true
+>>>>>>> os6-5160
     }
 }

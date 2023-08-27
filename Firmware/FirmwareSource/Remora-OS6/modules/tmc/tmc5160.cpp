@@ -7,9 +7,9 @@
 /***********************************************************************
                 MODULE CONFIGURATION AND CREATION FROM JSON     
 ************************************************************************/
-void createTMC2209()
+void createTMC5160()
 {
-    printf("Make TMC2209");
+    printf("Make TMC5160\n");
 
     const char* comment = module["Comment"];
     printf("%s\n",comment);
@@ -35,7 +35,7 @@ void createTMC2209()
 
     // SW Serial pin, RSense, addr, mA, microsteps, stealh, stall
     // TMC2209(std::string, float, uint8_t, uint16_t, uint16_t, bool, uint16_t);
-    Module* tmc = new TMC2209(RxPin, RSense, address, current, microsteps, stealthchop, stall);
+    Module* tmc = new TMC5160(RxPin, RSense, address, current, microsteps, stealthchop, stall);
     commsThread->registerModule(tmc);
 
     printf("\nStarting the COMMS thread\n");
@@ -54,8 +54,8 @@ void createTMC2209()
 ************************************************************************/
 
     // SW Serial pin, RSense, addr, mA, microsteps, stealh, hybrid, stall
-    // TMC2209(std::string, float, uint8_t, uint16_t, uint16_t, bool, uint16_t);
-TMC2209::TMC2209(std::string rxtxPin, float Rsense, uint8_t addr, uint16_t mA, uint16_t microsteps, bool stealth, uint16_t stall) :
+    // TMC5160(std::string, float, uint8_t, uint16_t, uint16_t, bool, uint16_t);
+TMC5160::TMC5160(std::string rxtxPin, float Rsense, uint8_t addr, uint16_t mA, uint16_t microsteps, bool stealth, uint16_t stall) :
     rxtxPin(rxtxPin),
     mA(mA),
     microsteps(microsteps),
@@ -64,15 +64,15 @@ TMC2209::TMC2209(std::string rxtxPin, float Rsense, uint8_t addr, uint16_t mA, u
     stall(stall)
 {
     this->Rsense = Rsense;
-    this->driver = new TMC2209Stepper(this->rxtxPin, this->rxtxPin, this->Rsense, this->addr);
+    this->driver = new TMC5160Stepper(this->rxtxPin, this->rxtxPin, this->Rsense, this->addr);
 }
 
-TMC2209::~TMC2209()
+TMC5160::~TMC5160()
 {
     delete this->driver;
 }
 
-void TMC2209::configure()
+void TMC5160::configure()
 {
     uint16_t result;
 
@@ -151,7 +151,7 @@ void TMC2209::configure()
     
 }
 
-void TMC2209::update()
+void TMC5160::update()
 {
     this->driver->SWSerial->tickerHandler();
 }

@@ -7,8 +7,6 @@
 #include "ArduinoJson.h"
 #include "pruThread.h"
 
-extern uint32_t base_freq;
-extern uint32_t servo_freq;
 
 extern JsonObject module;
 
@@ -33,8 +31,8 @@ extern volatile int32_t*   ptrJointFeedback[JOINTS];
 extern volatile uint8_t*   ptrJointEnable;
 extern volatile float*     ptrSetPoint[VARIABLES];
 extern volatile float*     ptrProcessVariable[VARIABLES];
-extern volatile uint16_t*   ptrInputs;
-extern volatile uint16_t*   ptrOutputs;
+extern volatile uint8_t*   ptrInputs;
+extern volatile uint8_t*   ptrOutputs;
 
 
 #endif
