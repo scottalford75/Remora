@@ -1,0 +1,54 @@
+{
+	"Board": "FYSETC SPIDER KING",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PB_11"
+	}
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PE_2",
+		"Direction Pin": 	"PE_1",
+		"Enable Pin": 		"PE_3"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC stepper",
+		"Comment":			"X - Joint 0 TMC driver",
+		"Driver": 			"2209",
+		"RX pin": 			"PE_0",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PD_5",
+		"Direction Pin": 	"PD_4",
+		"Enable Pin": 		"PD_6"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC stepper",
+		"Comment":			"Y - Joint 1 TMC driver",
+		"Driver": 			"2209",
+		"RX pin": 			"PD_3",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	}
+	
+	]
+}

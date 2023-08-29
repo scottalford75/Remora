@@ -47,6 +47,7 @@ void QEIdriver::init()
     this->htim.Instance = TIM1;
     this->htim.Init.Prescaler = 0;
     this->htim.Init.CounterMode = TIM_COUNTERMODE_UP;
+    //this->htim.Init.Period = 0xffffffff; // 32-bit count for TIM2
     this->htim.Init.Period = 65535;
     this->htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     this->htim.Init.RepetitionCounter = 0;

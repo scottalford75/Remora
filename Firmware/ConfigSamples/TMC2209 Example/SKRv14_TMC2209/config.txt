@@ -1,0 +1,246 @@
+{
+	"Board": "BIGTREETECH SKR v1.4",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"1.31"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"2.2",
+		"Direction Pin": 	"2.6",
+		"Enable Pin": 		"2.1"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC2209",
+		"Comment":			"X - Joint 0 TMC driver",
+		"RX pin": 			"1.10",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"0.19",
+		"Direction Pin": 	"0.20",
+		"Enable Pin": 		"2.08"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC2209",
+		"Comment":			"Y - Joint 1 TMC driver",
+		"RX pin": 			"1.9",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"0.22",
+		"Direction Pin": 	"2.11",
+		"Enable Pin": 		"0.21"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC2209",
+		"Comment":			"Z - Joint 2 TMC driver",
+		"RX pin": 			"1.8",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E0 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"2.13",
+		"Direction Pin": 	"0.11",
+		"Enable Pin": 		"2.12"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC2209",
+		"Comment":			"E0 - Joint 3 TMC driver",
+		"RX pin": 			"1.4",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E1 - Joint 4 step generator",
+		"Joint Number":		4,
+		"Step Pin": 		"1.15",
+		"Direction Pin": 	"1.14",
+		"Enable Pin": 		"1.16"
+	},
+	{
+	"Thread": "On load",
+	"Type": "TMC2209",
+		"Comment":			"E1 - Joint 4 TMC driver",
+		"RX pin": 			"1.1",
+		"RSense":			0.11,
+		"Current":			800,
+		"Microsteps":		16,
+		"Stealth chop":		"on",
+		"Stall sensitivity":0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Bed heater PWM",
+		"SP[i]": 			0,
+		"PWM Pin": 			"2.5"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Bed tenperature sensor",
+		"PV[i]": 			0,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"0.25",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Hotend 0 heater PWM",
+		"SP[i]": 			1,
+		"PWM Pin": 			"2.7"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Hotend 0 tenperature sensor",
+		"PV[i]": 			1,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"0.24",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "PWM",
+		"Comment": 			"Hotend 1 heater PWM",
+		"SP[i]": 			2,
+		"PWM Pin": 			"2.4"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Hotend 1 tenperature sensor",
+		"PV[i]": 			2,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"0.23",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X min",
+		"Pin":				"1.29",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y min",
+		"Pin":				"1.28",
+		"Mode":				"Input",
+		"Data Bit":			1
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z min",
+		"Pin":				"1.27",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"E0DET",
+		"Pin":				"1.26",
+		"Mode":				"Input",
+		"Data Bit":			3
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"E1DET",
+		"Pin":				"1.25",
+		"Mode":				"Input",
+		"Data Bit":			4
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"PWRDET",
+		"Pin":				"1.0",
+		"Mode":				"Input",
+		"Data Bit":			5
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Probe",
+		"Pin":				"0.10",
+		"Mode":				"Input",
+		"Data Bit":			6
+	},
+	{
+	"Thread": "Base",
+	"Type": "RCServo",
+		"Comment": 			"RC servo for probe",
+		"SP[i]": 			3,
+		"Servo Pin": 		"2.0"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Switch",
+		"Comment":			"Extruder fan switch",
+		"Pin":				"0.0",
+		"Mode":				"On",
+		"PV[i]":			1,
+		"SP":				25.5
+	}
+	]
+}

@@ -1,0 +1,92 @@
+{
+	"Board": "Mks Robin E3",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PC_5"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PC_0",
+		"Direction Pin": 	"PB_2",
+		"Enable Pin": 		"PC_13"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PC_2",
+		"Direction Pin": 	"PB_9",
+		"Enable Pin": 		"PB_12"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PC_14",
+		"Direction Pin": 	"PC_15",
+		"Enable Pin": 		"PB_8"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"E0 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"PB_4",
+		"Direction Pin": 	"PB_3",
+		"Enable Pin": 		"PB_5"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Temperature",
+		"Comment": 			"Extruder tenperature sensor",
+		"PV[i]": 			0,
+		"Sensor": 			"Thermistor",
+			"Thermistor":
+			{
+				"Pin": 		"PA_0",
+				"beta": 	3990,
+				"r0": 		100000,
+				"t0": 		25
+			}
+	},
+	{
+	"Thread": "Base",
+	"Type": "RCServo",
+		"Comment": 			"RC servo for probe",
+		"SP[i]": 			3,
+		"Servo Pin": 		"PA_3"
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X min",
+		"Pin":				"PA_12",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y min",
+		"Pin":				"PA_11",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z min",
+		"Pin":				"PC_6",
+		"Mode":				"Input",
+		"Data Bit":			4
+	}
+	]
+}

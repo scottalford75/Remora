@@ -4,7 +4,12 @@ loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EM
 
 # load the Remora real-time component
 
+	# for STM32 chips
 	loadrt remora
+
+	# for LPC17XX chips 
+	#loadrt remora_lpc
+
 
 
 # estop and SPI comms enable and feedback

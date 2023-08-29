@@ -73,7 +73,7 @@ void createDigitalPin()
                 METHOD DEFINITIONS
 ************************************************************************/
 
-DigitalPin::DigitalPin(volatile uint16_t &ptrData, int mode, std::string portAndPin, int bitNumber, bool invert, int modifier) :
+DigitalPin::DigitalPin(volatile uint8_t &ptrData, int mode, std::string portAndPin, int bitNumber, bool invert, int modifier) :
 	ptrData(&ptrData),
 	mode(mode),
 	portAndPin(portAndPin),
