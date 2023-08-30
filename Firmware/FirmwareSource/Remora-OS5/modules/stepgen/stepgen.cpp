@@ -14,6 +14,44 @@ void createStepgen()
     const char* enable = module["Enable Pin"];
     const char* step = module["Step Pin"];
     const char* dir = module["Direction Pin"];
+	const char* mode = module["Mode"];
+	const char* pinModifier = module["Modifier"];
+
+    int mod;
+	int pinMode;
+
+    if (!strcmp(pinModifier,"Open Drain"))
+    {
+        mod = OPENDRAIN;
+    }
+    else if (!strcmp(pinModifier,"Pull Up"))
+    {
+        mod = PULLUP;
+    }
+    else if (!strcmp(pinModifier,"Pull Down"))
+    {
+        mod = PULLDOWN;
+    }
+    else if (!strcmp(pinModifier,"Pull None"))
+    {
+        mod = PULLNONE;
+    }
+    else
+    {
+        mod = NONE;
+    }
+
+	if (!strcmp(mode,"Output"))
+    {
+        pinMode = OUTPUT;
+    }
+    else if (!strcmp(mode,"Input"))
+    {
+        pinMode = INPUT;
+    }
+	else {
+		pinMode = OUTPUT;
+	}
 
     // configure pointers to data source and feedback location
     ptrJointFreqCmd[joint] = &rxData.jointFreqCmd[joint];
@@ -21,7 +59,7 @@ void createStepgen()
     ptrJointEnable = &rxData.jointEnable;
 
     // create the step generator, register it in the thread
-    Module* stepgen = new Stepgen(PRU_BASEFREQ, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
+    Module* stepgen = new Stepgen(PRU_BASEFREQ, joint, enable, step, dir, mod, pinMode, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
     baseThread->registerModule(stepgen);
 }
 
@@ -30,19 +68,22 @@ void createStepgen()
                 METHOD DEFINITIONS
 ************************************************************************/
 
-Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::string step, std::string direction, int stepBit, volatile int32_t &ptrFrequencyCommand, volatile int32_t &ptrFeedback, volatile uint8_t &ptrJointEnable) :
+Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::string step, std::string direction, int mode, int modifier, int stepBit, volatile int32_t &ptrFrequencyCommand, volatile int32_t &ptrFeedback, volatile uint8_t &ptrJointEnable) :
 	jointNumber(jointNumber),
 	enable(enable),
 	step(step),
 	direction(direction),
+	mode(mode),
+	modifier(modifier),
 	stepBit(stepBit),
 	ptrFrequencyCommand(&ptrFrequencyCommand),
 	ptrFeedback(&ptrFeedback),
 	ptrJointEnable(&ptrJointEnable)
 {
-	this->enablePin = new Pin(this->enable, OUTPUT);			// create Pins
-	this->stepPin = new Pin(this->step, OUTPUT);
-	this->directionPin = new Pin(this->direction, OUTPUT);
+	//this->portAndPin, this->mode, this->modifier
+	this->enablePin = new Pin(this->enable, this->mode, this->modifier);			// create Pins
+	this->stepPin = new Pin(this->step, this->mode, this->modifier);
+	this->directionPin = new Pin(this->direction, this->mode, this->modifier);
 	this->DDSaccumulator = 0;
 	this->frequencyScale = (float)(1 << this->stepBit) / (float)threadFreq;
 	this->mask = 1 << this->jointNumber;
