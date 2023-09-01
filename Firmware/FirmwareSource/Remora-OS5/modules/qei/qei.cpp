@@ -42,7 +42,7 @@ QEI::QEI(volatile float &ptrEncoderCount) :
     this->hasIndex = false;
 }
 
-QEI::QEI(volatile float &ptrEncoderCount, volatile uint8_t &ptrData, int bitNumber) :
+QEI::QEI(volatile float &ptrEncoderCount, volatile uint16_t &ptrData, int bitNumber) :
 	ptrEncoderCount(&ptrEncoderCount),
     ptrData(&ptrData),
     bitNumber(bitNumber)
