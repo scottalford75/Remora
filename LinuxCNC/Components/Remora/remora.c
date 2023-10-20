@@ -48,7 +48,10 @@ MODULE_AUTHOR("Scott Alford AKA scotta");
 MODULE_DESCRIPTION("Driver for Remora STM32 control board");
 MODULE_LICENSE("GPL v2");
 
+<<<<<<< refs/remotes/origin/main
 
+=======
+>>>>>>> update
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
 ************************************************************************/
@@ -152,15 +155,22 @@ typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
-enum CHIP { LPC, STM } chip;
-char *chip_type = { "STM" }; //default to STM
-RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
+//enum CHIP { LPC, STM } chip;
+//char *chip_type = { "STM" }; //default to STM
+//RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
 int SPI_clk_div = 32;
 RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
 
 int PRU_base_freq = -1;
 RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
+<<<<<<< refs/remotes/origin/main
+=======
+
+static int reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+
+
+>>>>>>> update
 
 
 /***********************************************************************
@@ -196,6 +206,7 @@ int rtapi_app_main(void)
     }
 	
 	// check to see PRU chip type has been set at the command line
+	/*
 	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
 	{
 		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to LPC\n");
@@ -211,6 +222,7 @@ int rtapi_app_main(void)
 		rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU chip type (must be 'LPC' or 'STM')\n");
 		return -1;
 	}
+	*/
 	
 	// check to see if the PRU base frequency has been set at the command line
 	if (PRU_base_freq != -1)

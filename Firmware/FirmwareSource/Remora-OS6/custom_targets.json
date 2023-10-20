@@ -286,6 +286,4 @@
         "device_name": "STM32F103RC",
 		"bootloader_supported": true
     }
-
-
 }
