@@ -1,11 +1,6 @@
 ROOT=.
-<<<<<<< refs/remotes/origin/main
+<<<<<<< refs/remotes/origin/main=undefined
 <<<<<<< Updated upstream=undefined
 =
 >>>>>>> Stashed changes=undefined
-TARGET=MONSTER8
-=======
-=
-TARGET=LPCCAPPUCCINO
->>>>>>> update
-TARGET_CODE=custom-406
+>>>>>>> update=undefined
