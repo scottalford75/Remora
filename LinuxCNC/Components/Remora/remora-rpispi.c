@@ -81,11 +81,13 @@ typedef struct {
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
-	hal_bit_t   	*inputs[DIGITAL_INPUTS];
-} data_t;
+	hal_bit_t   	*inputs[DIGITAL_INPUTS*2];
+    } data_t;
 
 static data_t *data;
 
+
+#pragma pack(push, 1)
 
 typedef union
 {
@@ -101,14 +103,15 @@ typedef union
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
 	uint8_t jointEnable;
-	uint8_t outputs;
-	uint8_t spare2;
-    uint8_t spare1;
+	uint16_t outputs;
+    uint8_t spare0;
   };
 } txData_t;
 
-static txData_t txData;
+#pragma pack(pop)
 
+static txData_t txData;
+static rxData_t rxData;
 
 typedef union
 {
@@ -123,12 +126,14 @@ typedef union
     int32_t header;
     int32_t jointFeedback[JOINTS];
     float 	processVariable[VARIABLES];
-    uint8_t inputs;
+    uint16_t inputs;
   };
 } rxData_t;
 
-static rxData_t rxData;
+#pragma pack(pop)
 
+static txData_t txData;
+static rxData_t rxData;
 
 
 /* other globals */
@@ -146,8 +151,9 @@ static int32_t 		old_count[JOINTS] = { 0 };
 static int8_t		filter_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
-typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
+static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
 
+typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
@@ -160,10 +166,6 @@ RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
 
 int PRU_base_freq = -1;
 RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
-
-static int reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
-
-
 
 
 /***********************************************************************
@@ -186,6 +188,7 @@ int rtapi_app_main(void)
     char name[HAL_NAME_LEN + 1];
 	int n, retval;
 
+	// parse stepgen control type
 	for (n = 0; n < JOINTS; n++) {
 		if(parse_ctrl_type(ctrl_type[n]) == INVALID) {
 			rtapi_print_msg(RTAPI_MSG_ERR,
@@ -230,7 +233,6 @@ int rtapi_app_main(void)
 	}
 	
 	
-
 
     // connect to the HAL, initialise the driver
     comp_id = hal_init(modname);
@@ -413,6 +415,11 @@ This is throwing errors from axis.py for some reason...
 				comp_id, "%s.input.%01d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
+     		
+		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n+DIGITAL_INPUTS]),
+				comp_id, "%s.input.%01d.not", prefix, n);
+		if (retval != 0) goto error;
+		*(data->inputs[n+DIGITAL_INPUTS])=1;   
 	}
 
 	error:
@@ -660,7 +667,8 @@ void update_freq(void *arg, long period)
 		}
 
 		// calculate frequency limit
-		max_freq = PRU_BASEFREQ/(2.0); 	
+	//max_freq = PRU_base_freq/(2.0);
+		max_freq = PRU_base_freq; // step pulses now happen in a single base thread interval
 
 
 		// check for user specified frequency limit parameter
@@ -905,10 +913,12 @@ void spi_read()
 						if ((rxData.inputs & (1 << i)) != 0)
 						{
 							*(data->inputs[i]) = 1; 		// input is high
+							*(data->inputs[i+DIGITAL_INPUTS]) = 0;  // inverted
 						}
 						else
 						{
 							*(data->inputs[i]) = 0;			// input is low
+							*(data->inputs[i+DIGITAL_INPUTS]) = 1;  // inverted
 						}
 					}
 					break;
