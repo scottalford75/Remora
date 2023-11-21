@@ -108,10 +108,6 @@ typedef union
   };
 } txData_t;
 
-#pragma pack(pop)
-
-static txData_t txData;
-static rxData_t rxData;
 
 typedef union
 {
