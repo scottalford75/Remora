@@ -401,19 +401,19 @@ This is throwing errors from axis.py for some reason...
 
 	for (n = 0; n < DIGITAL_OUTPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_IN, &(data->outputs[n]),
-				comp_id, "%s.output.%01d", prefix, n);
+				comp_id, "%s.output.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->outputs[n])=0;
 	}
 
 	for (n = 0; n < DIGITAL_INPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n]),
-				comp_id, "%s.input.%01d", prefix, n);
+				comp_id, "%s.input.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
      		
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n+DIGITAL_INPUTS]),
-				comp_id, "%s.input.%01d.not", prefix, n);
+				comp_id, "%s.input.%02d.not", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n+DIGITAL_INPUTS])=1;   
 	}
