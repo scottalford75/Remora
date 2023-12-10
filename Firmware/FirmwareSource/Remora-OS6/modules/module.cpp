@@ -36,6 +36,12 @@ void Module::runModule()
 }
 
 
+void Module::runModulePost()
+{
+	this->updatePost();
+}
+
 void Module::update(){}
+void Module::updatePost(){}
 void Module::slowUpdate(){}
 void Module::configure(){}
