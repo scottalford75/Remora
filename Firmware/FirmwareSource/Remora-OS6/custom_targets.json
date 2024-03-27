@@ -149,6 +149,10 @@
         "device_name": "STM32F407ZETx"
 
     }, 
+
+    "BLACK_F407VE": {
+        "inherits": ["ARCH_MAX"]
+    },
     "OCTOPUS_429": {
         "inherits": ["MCU_STM32F4"],
         "core": "Cortex-M4F",
@@ -238,7 +242,7 @@
         "bootloader_supported": true
         
     },
-        "ROBIN_E3": {
+    "ROBIN_E3": {
         "inherits": ["MCU_STM32F1"],
         "c_lib": "std",
         "core": "Cortex-M3",
