@@ -111,9 +111,8 @@ typedef union
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
 	uint8_t jointEnable;
-	uint8_t outputs;
-	uint8_t spare2;
-    uint8_t spare1;
+	uint16_t outputs;
+    uint8_t spare0;
   };
 } txData_t;
 
@@ -133,7 +132,7 @@ typedef union
     int32_t header;
     int32_t jointFeedback[JOINTS];
     float 	processVariable[VARIABLES];
-    uint8_t inputs;
+    uint16_t inputs;
   };
 } rxData_t;
 
@@ -294,7 +293,7 @@ int rtapi_app_main(void)
 	}
 	else if (rp1 == true)
 	{
-		gpio_set_fsel(reset_gpio_pin, GPIO_FSEL_OUTPUT)
+		gpio_set_fsel(reset_gpio_pin, GPIO_FSEL_OUTPUT);
 	}
 	
 	retval = hal_pin_bit_newf(HAL_IN, &(data->PRUreset),
