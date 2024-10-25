@@ -27,8 +27,8 @@
 #define PC_BAUD             115200          // UART baudrate
 
 
-#define LOOP_TIME           .1
-#define SPI_ERR_MAX         5
+//#define LOOP_TIME           .1
+#define DATA_ERR_MAX         5
 // PRU reset will occur in SPI_ERR_MAX * LOOP_TIME = 0.5sec
 
 // SPI configuration
