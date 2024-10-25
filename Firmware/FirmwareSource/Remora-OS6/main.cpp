@@ -444,6 +444,7 @@ int main()
 
     printf("\nRemora PRU - Programmable Realtime Unit \n");
     printf("\n Mbed-OS6 \n");
+    printf("\n Remora-spi Driver \n");
 
     watchdog.start(2000);
 
