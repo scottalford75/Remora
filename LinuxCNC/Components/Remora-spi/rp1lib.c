@@ -124,6 +124,7 @@ int rp1spi_init(uint8_t spi_num, uint8_t cs_num, uint8_t mode, uint32_t freq)
     if (res.gpio_num != -1) {
         DEBUG_PRINT("Pin: MOSI -> GPIO Number: %d, FSEL Number: %d\n", res.gpio_num, res.fsel_num);
     } else {
+		return -1;
         printf("Failed to get GPIO and FSEL for pin: %s\n", mosi_pin);
     }
     gpio_set_fsel(res.gpio_num, res.fsel_num);
@@ -134,6 +135,7 @@ int rp1spi_init(uint8_t spi_num, uint8_t cs_num, uint8_t mode, uint32_t freq)
     if (res.gpio_num != -1) {
         DEBUG_PRINT("Pin: MISO -> GPIO Number: %d, FSEL Number: %d\n", res.gpio_num, res.fsel_num);
     } else {
+		return -1;
         printf("Failed to get GPIO and FSEL for pin: %s\n", miso_pin);
     }
     gpio_set_fsel(res.gpio_num, res.fsel_num);
@@ -144,6 +146,7 @@ int rp1spi_init(uint8_t spi_num, uint8_t cs_num, uint8_t mode, uint32_t freq)
     if (res.gpio_num != -1) {
         DEBUG_PRINT("Pin: SCLK -> GPIO Number: %d, FSEL Number: %d\n", res.gpio_num, res.fsel_num);
     } else {
+		return -1;
         printf("Failed to get GPIO and FSEL for pin: %s\n", sclk_pin);
     }
     gpio_set_fsel(res.gpio_num, res.fsel_num);
@@ -154,6 +157,7 @@ int rp1spi_init(uint8_t spi_num, uint8_t cs_num, uint8_t mode, uint32_t freq)
     if (res.gpio_num != -1) {
         DEBUG_PRINT("Pin: CS   -> GPIO Number: %d, FSEL Number: %d\n", res.gpio_num, res.fsel_num);
     } else {
+		return -1;
         printf("Failed to get GPIO and FSEL for pin: %s\n", cs_pin);
     }
     gpio_set_fsel(res.gpio_num, res.fsel_num);
@@ -176,7 +180,7 @@ int rp1spi_init(uint8_t spi_num, uint8_t cs_num, uint8_t mode, uint32_t freq)
     // Enable controller after writing control registers
     dw_spi_enable_chip(dws, 1);
 
-    return 0;
+    return 1;
 }
 
 
