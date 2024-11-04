@@ -117,6 +117,8 @@ typedef union
   };
 } txData_t;
 
+static txData_t txData;
+
 
 typedef union
 {
@@ -136,8 +138,8 @@ typedef union
 } rxData_t;
 
 #pragma pack(pop)
-static txData_t txData;
 static rxData_t rxData;
+
 
 
 /* other globals */
@@ -164,15 +166,22 @@ typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
-//enum CHIP { LPC, STM } chip;
-//char *chip_type = { "STM" }; //default to STM
-//RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
-
-int SPI_clk_div = 32;
-RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
-
 int PRU_base_freq = -1;
 RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
+
+// for BCM based SPI (Raspberry Pi 5)
+int SPI_clk_div = -1;
+RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
+
+// for RP1 based SPI (Raspberry Pi 5)
+int SPI_num = -1;
+RTAPI_MP_INT(SPI_num, "SPI number");
+
+int CS_num = -1;
+RTAPI_MP_INT(CS_num, "CS number");
+
+int32_t SPI_freq = -1;
+RTAPI_MP_INT(SPI_freq, "SPI frequency");
 
 static int reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
 
@@ -555,8 +564,31 @@ int rt_peripheral_init(void)
 		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // The default
 
 		//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);		// 3.125MHz on RPI3
-		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
+		//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
 		//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
+		//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
+		
+		// check if the default SPI clock divider has been overriden at the command line
+		if (SPI_clk_div != -1)
+		{
+			// check that the setting is a power of 2
+			if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
+			{
+				bcm2835_spi_setClockDivider(SPI_clk_div);
+				rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
+			}
+			else
+			{
+				// it's not a power of 2
+				rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: PRU SPI clock divider incorrect\n");
+				return -1;
+			}	
+		}
+		else
+		{
+			bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);
+			rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 16\n");
+		}
 
 		bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
 		bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
@@ -581,9 +613,16 @@ int rt_peripheral_init(void)
 			rtapi_print_msg(RTAPI_MSG_ERR,"rt_rp1_init failed.\n");
 			return -1;
 		}
+
+		if (SPI_num == -1) SPI_num = 0; // default to SPI0
+		if (CS_num == -1) CS_num = 0; // default to CS0
+		if (SPI_freq == -1) SPI_freq = 20000000; // default to 20MHz
 		
-		// TODO: Allow user to select SPI number, CS number and frequency
-		rp1spi_init(0, 0, SPI_MODE_0, 10000000);  // SPIx, CSx, mode, freq
+		if (!rp1spi_init(SPI_num, CS_num, SPI_MODE_0, SPI_freq))  // SPIx, CSx, mode, freq
+		{
+			rtapi_print_msg(RTAPI_MSG_ERR,"rp1spi_init failed.\n");
+			return -1;
+		}
 	}
 	else
 	{
