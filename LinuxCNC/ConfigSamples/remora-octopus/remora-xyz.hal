@@ -4,10 +4,8 @@
 	loadrt [KINS]KINEMATICS
 	loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
 
-	#loadrt remora 
+	loadrt remora-spi
 
-	loadrt remora chip_type=STM SPI_clk_div=32
-	#loadrt remora chip_type=LPC SPI_clk_div=64
 
 # estop loopback, SPI comms enable and feedback
 	net user-enable-out 	<= iocontrol.0.user-enable-out		=> remora.SPI-enable
