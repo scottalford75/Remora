@@ -23,6 +23,7 @@ void createStepgen()
     // create the step generator, register it in the thread
     Module* stepgen = new Stepgen(base_freq, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
     baseThread->registerModule(stepgen);
+    baseThread->registerModulePost(stepgen);
 }
 
 
@@ -56,6 +57,11 @@ void Stepgen::update()
 {
 	// Use the standard Module interface to run makePulses()
 	this->makePulses();
+}
+
+void Stepgen::updatePost()
+{
+	this->stopPulses();
 }
 
 void Stepgen::slowUpdate()
@@ -104,11 +110,9 @@ void Stepgen::makePulses()
             }
 			//*(this->ptrFeedback) = this->DDSaccumulator;                     // Update position feedback via pointer to the data receiver
             *(this->ptrFeedback) = this->rawCount;
+            this->isStepping = true;
 		}
-		else
-		{
-			this->stepPin->set(false);										// Reset step pin
-		}
+
 
 	}
 	else
@@ -117,6 +121,13 @@ void Stepgen::makePulses()
 	}
 
 }
+
+void Stepgen::stopPulses()
+{
+	this->stepPin->set(false);	// Reset step pin
+	this->isStepping = false;
+}
+
 
 void Stepgen::setEnabled(bool state)
 {
