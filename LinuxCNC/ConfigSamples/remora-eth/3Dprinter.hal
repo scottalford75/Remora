@@ -15,10 +15,10 @@
 
 # end-stops
 
-	#net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
-	#net X-max 	remora.input.1 	=> joint.0.pos-lim-sw-in
-	#net Y-min 	remora.input.2 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
-	#net Y-max 	remora.input.3 	=> joint.1.pos-lim-sw-in
+	#net X-min 	remora.input.00 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	#net X-max 	remora.input.01 	=> joint.0.pos-lim-sw-in
+	#net Y-min 	remora.input.02 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in
+	#net Y-max 	remora.input.03 	=> joint.1.pos-lim-sw-in
 
 
 # remora command outputs

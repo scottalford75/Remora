@@ -56,9 +56,9 @@
 
 # end-stops
 
-	net X-home 	remora.input.0 	=> joint.0.home-sw-in 
+	net X-home 	remora.input.00 	=> joint.0.home-sw-in 
 
-	net Y-home 	remora.input.1 	=> joint.1.home-sw-in 
+	net Y-home 	remora.input.01 	=> joint.1.home-sw-in 
 
 
 

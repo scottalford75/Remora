@@ -5,12 +5,12 @@ placeFrames 0
 set ::ratio 0
 set ::old_w_leftf 206
 set ::watchlist {
-    pin+remora.input.1
-    pin+remora.input.0
-    pin+remora.input.2
-    pin+remora.input.3
-    pin+remora.input.4
-    pin+remora.input.6
+    pin+remora.input.01
+    pin+remora.input.00
+    pin+remora.input.02
+    pin+remora.input.03
+    pin+remora.input.04
+    pin+remora.input.06
     pin+joint.0.homed
     pin+joint.0.home-sw-in
     pin+joint.1.home-sw-in

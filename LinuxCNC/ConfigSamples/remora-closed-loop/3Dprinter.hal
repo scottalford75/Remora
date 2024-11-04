@@ -32,10 +32,10 @@
 
 # end-stops
 
-	net X-min 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
-	net Y-min 	remora.input.1 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in	
-	net X-max 	remora.input.3 	=> joint.0.pos-lim-sw-in
-	#net Y-max 	remora.input.4 	=> joint.1.pos-lim-sw-in
+	net X-min 	remora.input.00 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	net Y-min 	remora.input.01 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in	
+	net X-max 	remora.input.03 	=> joint.0.pos-lim-sw-in
+	#net Y-max 	remora.input.04 	=> joint.1.pos-lim-sw-in
 
 # bed compensation
 
@@ -51,9 +51,9 @@
 	loadrt mux_generic config="bb2"
 	addf mux-gen.00 servo-thread
 
-	#net mux00		<= remora.input.6		=> mux-gen.00.in-bit-00
-	net mux00		<= remora.input.5		=> mux-gen.00.in-bit-00
-	net mux01		<= remora.input.2		=> mux-gen.00.in-bit-01
+	#net mux00		<= remora.input.06		=> mux-gen.00.in-bit-00
+	net mux00		<= remora.input.05		=> mux-gen.00.in-bit-00
+	net mux01		<= remora.input.02		=> mux-gen.00.in-bit-01
 	net mux-sel		<= motion.digital-out-00 	=> mux-gen.00.sel-bit-00
 
 	net probe		<= mux-gen.00.out-bit	=> motion.probe-input
