@@ -20,7 +20,7 @@
 
 #include "BlockDevice.h"
 #include "DigitalIn.h"
-#include "PlatformMutex.h"
+#include "rtos/Mutex.h"
 #include "sdio_device.h"
 
 namespace mbed
@@ -131,7 +131,7 @@ class SDIOBlockDevice : public BlockDevice
     SD_Cardinfo_t _cardInfo;
     uint32_t _card_type;
 
-    PlatformMutex _mutex;
+    mutable rtos::Mutex _mutex;
     virtual void lock()
     {
         _mutex.lock();

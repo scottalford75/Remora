@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "mbed.h"
 #include <errno.h>
 #include "platform/mbed_debug.h"
 #include "platform/mbed_wait_api.h"
@@ -57,6 +58,8 @@ namespace mbed
 #ifndef MBED_CONF_SD_TIMEOUT
 #define MBED_CONF_SD_TIMEOUT (30 * 1000) /* ms */
 #endif
+
+constexpr auto delayTime = 2ms;
 
 SDIOBlockDevice::SDIOBlockDevice(PinName cardDetect) : _cardDetect(cardDetect),
                                                        _is_initialized(0),
@@ -196,6 +199,7 @@ int SDIOBlockDevice::read(void *buffer, bd_addr_t addr, bd_size_t size)
                 unlock();
                 return SD_BLOCK_DEVICE_ERROR_READBLOCKS;
             }
+            ThisThread::sleep_for(delayTime);
         }
     }
 
@@ -214,6 +218,7 @@ int SDIOBlockDevice::read(void *buffer, bd_addr_t addr, bd_size_t size)
                 unlock();
                 return SD_BLOCK_DEVICE_ERROR_READBLOCKS;
             }
+            ThisThread::sleep_for(delayTime);
         }
         // make sure card is ready
         tickstart = HAL_GetTick();
@@ -225,6 +230,7 @@ int SDIOBlockDevice::read(void *buffer, bd_addr_t addr, bd_size_t size)
                 unlock();
                 return SD_BLOCK_DEVICE_ERROR_READBLOCKS;
             }
+            ThisThread::sleep_for(delayTime);
         }
     }
     else

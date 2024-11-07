@@ -7,9 +7,9 @@
 
 #include "stm32f1xx_hal.h"
 
+#include "modules/module.h"
 
-
-class RemoraComms
+class RemoraComms : public Module
 {
     private:
 
@@ -20,10 +20,26 @@ class RemoraComms
         DMA_HandleTypeDef   hdma_memtomem_dma2_stream1;
         HAL_StatusTypeDef   status;
 
+        uint32_t            transferCompleteFlag;
+
         volatile rxData_t*  ptrRxData;
         volatile txData_t*  ptrTxData;
         rxData_t            spiRxBuffer;
+
+        uint8_t		        noDataCount;
         uint8_t             rejectCnt;
+        uint8_t             dataCnt;
+
+        uint8_t             DMArxCnt;
+        uint32_t            ticksStart;
+        uint32_t            ticks;
+
+        bool                NSS;
+        bool                resetSPI;
+
+        bool                data;
+        bool                CommsStatus;
+
         bool                SPIdata;
         bool                SPIdataError;
         
@@ -31,13 +47,17 @@ class RemoraComms
         InterruptIn         slaveSelect;
         bool                sharedSPI;
         
-        void processPacket(void);
+        void NSSinterrupt(void);
 
     public:
 
         RemoraComms(volatile rxData_t*, volatile txData_t*, SPI_TypeDef*, PinName);
+
+        virtual void update(void);
+
         void init(void);
         void start(void);
+        void SPItasks(void);
         bool getStatus(void);
         void setStatus(bool);
         bool getError(void);

@@ -21,21 +21,14 @@
 /* Extern variables ---------------------------------------------------------*/
 
 SD_HandleTypeDef hsd;
-///DMA_HandleTypeDef hdma_sdmmc_rx;
-///DMA_HandleTypeDef hdma_sdmmc_tx;
 
 // simple flags for DMA pending signaling
 volatile uint8_t SD_DMA_ReadPendingState = SD_TRANSFER_OK;
 volatile uint8_t SD_DMA_WritePendingState = SD_TRANSFER_OK;
 
-/* DMA Handlers are global, there is only one SDIO interface */
-
-/**
-  * @brief  This function handles SD interrupt request.
-  */
-void SDMMC1_IRQHandler(void)
+static void _SDMMC1_IRQHandler(void)
 {
-  HAL_SD_IRQHandler(&hsd);
+    HAL_SD_IRQHandler(&hsd);
 }
 
 
@@ -45,55 +38,61 @@ void SDMMC1_IRQHandler(void)
  */
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 {
-    ///IRQn_Type IRQn;
+    IRQn_Type IRQn;
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     if (hsd->Instance == SDMMC1)
     {
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SDMMC;
+        PeriphClkInitStruct.PLL2.PLL2M = 5;         // 25 MHz / 5 = 5 MHz
+        PeriphClkInitStruct.PLL2.PLL2N = 160;       // 5 MHz * 160 = 800 MHz (140: 700 MHz, 120: 600 MHz)
+        PeriphClkInitStruct.PLL2.PLL2P = 4;
+        PeriphClkInitStruct.PLL2.PLL2Q = 8;
+        PeriphClkInitStruct.PLL2.PLL2R = 4;        // 64: 12.5 MHz  32: 25 MHz 16: 50 MHz   8: 100 MHz  4: 200 MHz
+        PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
+        PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+        PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+        PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL2;
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+        {
+            error("SDMMC clock Init error at %d in %s", __LINE__, __FILE__);
+        }
+
         /* Peripheral clock enable */
         __HAL_RCC_SDMMC1_CLK_ENABLE();
-        ///__HAL_RCC_DMA2_CLK_ENABLE();
 
-        /* Enable GPIOs clock */
-        __HAL_RCC_GPIOB_CLK_ENABLE();
         __HAL_RCC_GPIOC_CLK_ENABLE();
         __HAL_RCC_GPIOD_CLK_ENABLE();
-
-        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull      = GPIO_NOPULL;
-        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
-        
-        /* D0(PC8), D1(PC9), D2(PC10), D3(PC11), CK(PC12), CMD(PD2) */
-        /* Common GPIO configuration */
-        GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
-        
-        /* GPIOC configuration */
+        /**SDMMC1 GPIO Configuration
+        PC8     ------> SDMMC1_D0
+        PC9     ------> SDMMC1_D1
+        PC10     ------> SDMMC1_D2
+        PC11     ------> SDMMC1_D3
+        PC12     ------> SDMMC1_CK
+        PD2     ------> SDMMC1_CMD
+        */
         GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-        /* GPIOD configuration */
         GPIO_InitStruct.Pin = GPIO_PIN_2;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF12_SDIO1;
         HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-        /* D0DIR(PC6), D123DIR(PC7) */
-        GPIO_InitStruct.Alternate = GPIO_AF8_SDIO1;
-        /* GPIOC configuration */
-        GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-        HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-        /* CKIN(PB8), CDIR(PB9) */
-        GPIO_InitStruct.Alternate = GPIO_AF7_SDIO1;
-        /* GPIOB configuration */
-        GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-        __HAL_RCC_SDMMC1_FORCE_RESET();
-        __HAL_RCC_SDMMC1_RELEASE_RESET();
-
-        /* NVIC configuration for SDIO interrupts */
-        HAL_NVIC_SetPriority(SDMMC1_IRQn, 5, 0);
-        HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
-    } 
+        // SDMMC1 interrupt Init
+        IRQn = SDMMC1_IRQn;
+        HAL_NVIC_SetPriority(IRQn, 0, 0);   // 0: highest prio, 15 lowest
+        NVIC_SetVector(IRQn, (uint32_t)&_SDMMC1_IRQHandler);
+        HAL_NVIC_EnableIRQ(IRQn);
+    }
+    
 }
 
 /**
@@ -103,51 +102,38 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd)
 {
     if (hsd->Instance == SDMMC1) {
-            /* Enable GPIOs clock */
-        __HAL_RCC_GPIOB_CLK_DISABLE();
-        __HAL_RCC_GPIOC_CLK_DISABLE();
-        __HAL_RCC_GPIOD_CLK_DISABLE();
-        
-        /* Disable SDMMC1 clock */
         __HAL_RCC_SDMMC1_CLK_DISABLE();
+
+        /**SDMMC1 GPIO Configuration
+        PC8     ------> SDMMC1_D0
+        PC9     ------> SDMMC1_D1
+        PC10     ------> SDMMC1_D2
+        PC11     ------> SDMMC1_D3
+        PC12     ------> SDMMC1_CK
+        PD2     ------> SDMMC1_CMD
+        */
+        HAL_GPIO_DeInit(GPIOC, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
+                            |GPIO_PIN_12);
+
+        HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
     }
 }
-
-
 
 /**
-  * @brief  Enables the SD wide bus mode.
-  * @param  hsd pointer to SD handle
-  * @retval error state
-  */
-static uint32_t SD_WideBus_Enable(SD_HandleTypeDef *hsd)
+ * @brief  DeInitializes the SD MSP.
+ * @param  hsd: SD handle
+ * @param  Params : pointer on additional configuration parameters, can be NULL.
+ */
+void SD_MspDeInit(SD_HandleTypeDef *hsd, void *Params)
 {
-    uint32_t errorstate = HAL_SD_ERROR_NONE;
 
-    if ((SDMMC_GetResponse(hsd->Instance, SDMMC_RESP1) & SDMMC_CARD_LOCKED) == SDMMC_CARD_LOCKED)
-    {
-        return HAL_SD_ERROR_LOCK_UNLOCK_FAILED;
+#if 0
+    if (hsd->Instance == SDMMC2) {
     }
-
-    /* Send CMD55 APP_CMD with argument as card's RCA.*/
-    errorstate = SDMMC_CmdAppCommand(hsd->Instance, (uint32_t)(hsd->SdCard.RelCardAdd << 16U));
-    if (errorstate != HAL_OK)
-    {
-        return errorstate;
-    }
-
-    /* Send ACMD6 APP_CMD with argument as 2 for wide bus mode */
-    errorstate = SDMMC_CmdBusWidth(hsd->Instance, 2U);
-    if (errorstate != HAL_OK)
-    {
-        return errorstate;
-    }
-
-    hsd->Init.BusWide = SDMMC_BUS_WIDE_4B;
-    SDMMC_Init(hsd->Instance, hsd->Init);
-
-    return HAL_SD_ERROR_NONE;
+#endif
 }
+
+
 
 /**
  * @brief  Initializes the SD card device.
@@ -158,26 +144,18 @@ uint8_t SD_Init(void)
     uint8_t sd_state = MSD_OK;
 
     hsd.Instance = SDMMC1;
-    HAL_SD_DeInit(&hsd);
-
-    hsd.Init.ClockEdge           = SDMMC_CLOCK_EDGE_FALLING;
-    hsd.Init.ClockPowerSave      = SDMMC_CLOCK_POWER_SAVE_DISABLE;
-    hsd.Init.BusWide             = SDMMC_BUS_WIDE_4B;
-    hsd.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_DISABLE;
-    hsd.Init.ClockDiv            = 2;
+    hsd.Init.ClockEdge = SDMMC_CLOCK_EDGE_RISING;
+    hsd.Init.ClockPowerSave = SDMMC_CLOCK_POWER_SAVE_ENABLE;
+    hsd.Init.BusWide = SDMMC_BUS_WIDE_4B;
+    hsd.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
+    hsd.Init.ClockDiv = 2;          // SDMMC kernel clock / (2 * 2) = 50 MHz
 
     /* HAL SD initialization */
     sd_state = HAL_SD_Init(&hsd);
-    /* Configure SD Bus width (4 bits mode selected) */
-    if (sd_state == MSD_OK)
-    {
-        /* Enable wide operation */
-        if (SD_WideBus_Enable(&hsd) != HAL_OK)
-        {
-            sd_state = MSD_ERROR;
-        }
-    }
 
+    sd_state = HAL_SD_ConfigSpeedBusOperation(&hsd, SDMMC_SPEED_MODE_AUTO);
+
+   
     return sd_state;
 }
 
@@ -196,7 +174,7 @@ uint8_t SD_DeInit(void)
     }
 
     /* Msp SD deinitialization */
-    HAL_SD_MspDeInit(&hsd);
+    SD_MspDeInit(&hsd, NULL);
 
     return sd_state;
 }
@@ -253,6 +231,17 @@ uint8_t SD_ReadBlocks_DMA(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBloc
     uint8_t sd_state = MSD_OK;
     SD_DMA_ReadPendingState = SD_TRANSFER_BUSY;
 
+    if ((uint32_t)pData & 3) {
+        __BKPT(0);
+    }
+
+    /*
+    the SCB_InvalidateDCache_by_Addr() requires a 32-Byte aligned address,
+    adjust the address and the D-Cache size to invalidate accordingly.
+    */
+    uint32_t alignedAddr = (uint32_t)pData & ~0x1F;
+    SCB_InvalidateDCache_by_Addr((uint32_t*)alignedAddr, NumOfBlocks*BLOCKSIZE + ((uint32_t)pData - alignedAddr));
+    
     /* Read block(s) in DMA transfer mode */
     if (HAL_SD_ReadBlocks_DMA(&hsd, (uint8_t *)pData, ReadAddr, NumOfBlocks) != HAL_OK)
     {
@@ -272,6 +261,9 @@ uint8_t SD_ReadBlocks_DMA(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBloc
  */
 uint8_t SD_WriteBlocks_DMA(uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
+    // Ensure the data is flushed to main memory
+    SCB_CleanDCache_by_Addr(pData, NumOfBlocks * 512);      // Todo: use real blocksize
+
     uint8_t sd_state = MSD_OK;
     SD_DMA_WritePendingState = SD_TRANSFER_BUSY;
 
@@ -383,4 +375,19 @@ void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
 {
     SD_DMA_WritePendingState = SD_TRANSFER_OK;
+}
+
+/**
+  * @brief SD Abort callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
+{
+      //BSP_SD_AbortCallback();
+}
+
+void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
+{
+    printf("SD_Error: 0x%x\n", hsd->ErrorCode);
 }

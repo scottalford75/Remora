@@ -76,11 +76,6 @@ extern "C"
 
   uint8_t SD_GetCardState(void);
   void SD_GetCardInfo(SD_Cardinfo_t *CardInfo);
-
-  /* callback function for DMA Rx/Tx completete, called by HAL SDIO interrupt handler */
-  void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd);
-  void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd);
-
 #ifdef __cplusplus
 }
 #endif
