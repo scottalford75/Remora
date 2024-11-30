@@ -33,8 +33,31 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         HAL_NVIC_SetPriority(EXTI1_IRQn , 5, 0);
     }
 
-    slaveSelect.rise(callback(this, &RemoraComms::processPacket));  
+    //slaveSelect.rise(callback(this, &RemoraComms::processPacket));
+    slaveSelect.rise(callback(this, &RemoraComms::NSSinterrupt));
 }
+
+void RemoraComms:: update()
+{
+	if (this->data)
+	{
+		this->noDataCount = 0;
+		this->CommsStatus = true;
+	}
+	else
+	{
+		this->noDataCount++;
+	}
+
+	if (this->noDataCount > DATA_ERR_MAX)
+	{
+		this->noDataCount = 0;
+		this->CommsStatus = false;
+	}
+
+	this->data = false;    
+}
+
 
 
 
@@ -142,63 +165,89 @@ void RemoraComms::start()
     HAL_SPI_TransmitReceive_DMA(&this->spiHandle, (uint8_t *)this->ptrTxData->txBuffer, (uint8_t *)this->spiRxBuffer.rxBuffer, SPI_BUFF_SIZE);
 }
 
-void RemoraComms::processPacket()
+void RemoraComms::NSSinterrupt()
 {
-    switch (this->spiRxBuffer.header)
+    // NSS / CS has gone high, packet recieved
+    this->NSS = true;
+}
+
+void RemoraComms::SPItasks()
+{
+    if (this->NSS)
     {
-      case PRU_READ:
-        this->SPIdata = true;
-        this->rejectCnt = 0;
-        // READ so do nothing with the received data
-        break;
+        this->NSS = false;
 
-      case PRU_WRITE:
-        this->SPIdata = true;
-        this->rejectCnt = 0;
-        // we've got a good WRITE header, move the data to rxData
+        this->DMArxCnt = 0;
+        this->ticksStart = HAL_GetTick();
 
-        // **** would like to use DMA for this but cannot when the stream is in CIRCULAR mode for the SPI transfer ****
-        // TODO: figure out how to use NORMAL mode for SPI...
-        //this->status = HAL_DMA_Start(&hdma_memtomem_dma2_stream1, (uint32_t)&this->spiRxBuffer.rxBuffer, (uint32_t)this->rxData->rxBuffer, SPI_BUFF_SIZE);
-        //if (this->status != HAL_OK) printf("F\n");
-
-        // Do it the slower way. This does not seem to impact performance but not great to stay in ISR context for longer.. :-(
-        
-        // ensure an atomic access to the rxBuffer
-		// disable thread interrupts
-		__disable_irq(); 
-
-        for (int i = 0; i < SPI_BUFF_SIZE; i++)
+        // wait for DMA to complete and break if DMA is not complete in time
+        while (this->DMArxCnt != SPI_BUFF_SIZE)
         {
-            this->ptrRxData->rxBuffer[i] = this->spiRxBuffer.rxBuffer[i];
+            this->DMArxCnt = __HAL_DMA_GET_COUNTER(&this->hdma_spi_rx);
+            this->ticks = HAL_GetTick() - this->ticksStart;
+
+            if (this->ticks > 2)
+            {
+                this->resetSPI = true;
+                break;
+            }
         }
 
-        // re-enable thread interrupts
-		__enable_irq();
-
-        break;
-
-      default:
-        this->rejectCnt++;
-        if (this->rejectCnt > 5)
+        if (this->resetSPI)
         {
-            this->SPIdataError = true;
+            // for testing, not needed / implemented
+            printf("  Reset SPI now\n");
+            this->resetSPI = false;
         }
-        // reset SPI somehow
+
+        switch (this->spiRxBuffer.header)
+        {
+            case PRU_READ:
+                this->data = true;
+                this->rejectCnt = 0;
+                ++this->dataCnt;
+                // READ so do nothing with the received data
+                break;
+
+            case PRU_WRITE:
+                this->data = true;
+                this->rejectCnt = 0;
+                ++this->dataCnt;
+                // we've got a good WRITE header, move the data to rxData
+
+                // ensure an atomic access to the rxBuffer
+                // disable thread interrupts
+                __disable_irq(); 
+
+                for (int i = 0; i < SPI_BUFF_SIZE; i++)
+                {
+                    this->ptrRxData->rxBuffer[i] = this->spiRxBuffer.rxBuffer[i];
+                }
+
+                // re-enable thread interrupts
+                __enable_irq();
+                
+                break;
+
+            default:
+                this->rejectCnt++;
+                if (this->rejectCnt > 5)
+                {
+                    this->SPIdataError = true;
+                }
+        }
     }
-
-    HAL_SPI_TransmitReceive_DMA(&this->spiHandle, (uint8_t *)this->ptrTxData->txBuffer, (uint8_t *)this->spiRxBuffer.rxBuffer, SPI_BUFF_SIZE);
 }
 
 
 bool RemoraComms::getStatus(void)
 {
-    return this->SPIdata;
+    return this->CommsStatus;
 }
 
 void RemoraComms::setStatus(bool status)
 {
-    this->SPIdata = status;
+    this->CommsStatus = status;
 }
 
 bool RemoraComms::getError(void)

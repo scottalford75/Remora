@@ -4,7 +4,7 @@
 	loadrt [KINS]KINEMATICS
 	loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
 
-	loadrt remora ctrl_type=v,p,p,p,p
+	loadrt remora-spi ctrl_type=v,p,p,p,p
 	loadrt PRUencoder names=encoderJ0,encoderJ1
 	loadrt pid names=j0pid
 

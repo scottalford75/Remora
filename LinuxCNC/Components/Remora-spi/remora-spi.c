@@ -91,11 +91,12 @@ typedef struct {
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
-	hal_bit_t   	*inputs[DIGITAL_INPUTS];
+	hal_bit_t   	*inputs[DIGITAL_INPUTS*2];
 } data_t;
 
 static data_t *data;
 
+#pragma pack(push, 1)
 
 typedef union
 {
@@ -136,6 +137,7 @@ typedef union
   };
 } rxData_t;
 
+#pragma pack(pop)
 static rxData_t rxData;
 
 
@@ -403,16 +405,21 @@ This is throwing errors from axis.py for some reason...
 
 	for (n = 0; n < DIGITAL_OUTPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_IN, &(data->outputs[n]),
-				comp_id, "%s.output.%01d", prefix, n);
+				comp_id, "%s.output.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->outputs[n])=0;
 	}
 
 	for (n = 0; n < DIGITAL_INPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n]),
-				comp_id, "%s.input.%01d", prefix, n);
+				comp_id, "%s.input.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
+			
+		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n+DIGITAL_INPUTS]),
+				comp_id, "%s.input.%02d.not", prefix, n);
+		if (retval != 0) goto error;
+		*(data->inputs[n+DIGITAL_INPUTS])=1;   
 	}
 
 	error:
@@ -849,7 +856,8 @@ void update_freq(void *arg, long period)
 		}
 
 		// calculate frequency limit
-		max_freq = PRU_BASEFREQ/(2.0); 	
+		//max_freq = PRU_BASEFREQ/(2.0); 	
+		max_freq = PRU_base_freq; // step pulses now happen in a single base thread interval
 
 
 		// check for user specified frequency limit parameter
@@ -1111,10 +1119,12 @@ void spi_read()
 						if ((rxData.inputs & (1 << i)) != 0)
 						{
 							*(data->inputs[i]) = 1; 		// input is high
+							*(data->inputs[i+DIGITAL_INPUTS]) = 0;  // inverted
 						}
 						else
 						{
 							*(data->inputs[i]) = 0;			// input is low
+							*(data->inputs[i+DIGITAL_INPUTS]) = 1;  // inverted
 						}
 					}
 					break;
