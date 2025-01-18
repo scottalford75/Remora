@@ -87,7 +87,7 @@ typedef struct {
 static data_t *data;
 
 
-//#pragma pack(push, 1)
+#pragma pack(push, 1)
 
 typedef union
 {
@@ -126,7 +126,7 @@ typedef union
   };
 } rxData_t;
 
-//#pragma pack(pop)
+#pragma pack(pop)
 
 static txData_t txData;
 static rxData_t rxData;
