@@ -47,6 +47,8 @@
 #include "spi-dw.h"
 #include "spi-dw.c"
 
+#include "dtcboards.h"
+
 #include "remora.h"
 
 #define MODNAME "remora-spi"
@@ -478,69 +480,60 @@ void rtapi_app_exit(void)
 
 int rt_peripheral_init(void)
 {
-	int  memfd;
-    FILE *fp;
-	
-	// assume were only running on >RPi3
-	
-    if ((fp = fopen("/proc/device-tree/soc/ranges" , "rb")))
-    {
-        unsigned char buf[16];
-		uint32_t base_address;
-        uint32_t peri_size;
-        if (fread(buf, 1, sizeof(buf), fp) >= 8)
-        {
-            base_address = (buf[4] << 24) |
-              (buf[5] << 16) |
-              (buf[6] << 8) |
-              (buf[7] << 0);
-            
-            peri_size = (buf[8] << 24) |
-              (buf[9] << 16) |
-              (buf[10] << 8) |
-              (buf[11] << 0);
-            
-            if (!base_address)
-            {
-                /* looks like RPI 4 or 5 */
-                base_address = (buf[8] << 24) |
-                      (buf[9] << 16) |
-                      (buf[10] << 8) |
-                      (buf[11] << 0);
-                      
-                peri_size = (buf[12] << 24) |
-                (buf[13] << 16) |
-                (buf[14] << 8) |
-                (buf[15] << 0);
-            }
+	FILE *fp;
+    int i, j;
+    char buf[256];
+    ssize_t buflen;
+    char *cptr;
+    const int DTC_MAX = 8;
+    const char *dtcs[DTC_MAX + 1];
+    
+    // assume were only running on >RPi3
+    
+    if ((fp = fopen("/proc/device-tree/compatible" , "rb"))){
 
-			rtapi_print_msg(RTAPI_MSG_ERR,"\nRPi peripheral: Base address 0x%08x size 0x%08x\n", base_address, peri_size);
+        // Read the 'compatible' string-list from the device-tree
+        buflen = fread(buf, 1, sizeof(buf), fp);
+        if(buflen < 0) {
+            rtapi_print_msg(RTAPI_MSG_ERR,"Failed to read platform identity.\n");
+            return -1;
         }
-		
-		if (base_address == BCM2835_RPI2_PERI_BASE)
-		{
-			rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 3, using BCM2835 driver\n\n");
-			bcm = true;
-		}
-		else if (base_address == BCM2835_RPI4_PERI_BASE)
-		{
-			rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 4, using BCM2835 driver\n\n");
-			bcm = true;
-		}
-		else if (peri_size == RPI5_RP1_PERI_BASE)
-		{
-			// on the RPi 5, the base address is in the location of the peripheral size
-			rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 5, using RP1 driver\n\n");
-			rp1 = true;
-		}
-		else
-		{
-			rtapi_print_msg(RTAPI_MSG_ERR, "Error, RPi not detected\n");
-			return -1;
-		}
-		
-		fclose(fp);
-	}	
+
+        // Decompose the device-tree buffer into a string-list with the pointers to
+        // each string in dtcs. Don't go beyond the buffer's size.
+        memset(dtcs, 0, sizeof(dtcs));
+        for(i = 0, cptr = buf; i < DTC_MAX && cptr; i++) {
+            dtcs[i] = cptr;
+            j = strlen(cptr);
+            if((cptr - buf) + j + 1 < buflen)
+                cptr += j + 1;
+            else
+                cptr = NULL;
+        }
+
+        for(i = 0; dtcs[i] != NULL; i++) {
+            if(        !strcmp(dtcs[i], DTC_RPI_MODEL_4B)
+                ||    !strcmp(dtcs[i], DTC_RPI_MODEL_4CM)
+                ||    !strcmp(dtcs[i], DTC_RPI_MODEL_400)
+                ||    !strcmp(dtcs[i], DTC_RPI_MODEL_3BP)
+                ||    !strcmp(dtcs[i], DTC_RPI_MODEL_3AP)
+                ||    !strcmp(dtcs[i], DTC_RPI_MODEL_3B)) {
+                rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 3 or 4, using BCM2835 driver\n");
+                bcm = true;
+                break;    // Found our supported board
+            } else if(!strcmp(dtcs[i], DTC_RPI_MODEL_5B) || !strcmp(dtcs, DTC_RPI_MODEL_5CM)) {
+                rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 5, using rp1 driver\n");
+                rp1 = true;
+                break;    // Found our supported board
+            } else {
+                rtapi_print_msg(RTAPI_MSG_ERR, "Error, RPi not detected\n");
+                return -1;
+            }
+        }
+        fclose(fp);
+    } else {
+        rtapi_print_msg(RTAPI_MSG_ERR,"Cannot open '/proc/device-tree/compatible' for read.\n");
+    }    	  	
         
 	if (bcm == true)
 	{
