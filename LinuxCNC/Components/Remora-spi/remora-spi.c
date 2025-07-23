@@ -521,7 +521,7 @@ int rt_peripheral_init(void)
                 rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 3 or 4, using BCM2835 driver\n");
                 bcm = true;
                 break;    // Found our supported board
-            } else if(!strcmp(dtcs[i], DTC_RPI_MODEL_5B) || !strcmp(dtcs, DTC_RPI_MODEL_5CM)) {
+            } else if(!strcmp(dtcs[i], DTC_RPI_MODEL_5B) || !strcmp(dtcs[i], DTC_RPI_MODEL_5CM)) {
                 rtapi_print_msg(RTAPI_MSG_ERR, "Raspberry Pi 5, using rp1 driver\n");
                 rp1 = true;
                 break;    // Found our supported board
