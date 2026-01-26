@@ -53,9 +53,9 @@ typedef struct {
     unsigned num_gpios;
     uint64_t base;
     //SPI_DEVICE_T *spi[SPI_MAX]; // Array of pointers to SPI devices
-    struct dw_spi *spi[SPI_DEV];            // Array of Designware SPI structures
-    struct dw_spi_cfg *spi_cfg[SPI_DEV];    // Array of SPI slave device structures
-    struct spi_device *spi_dev[SPI_DEV];    // Array of SPI device structures
+    struct dw_spi spi[SPI_DEV];            // Array of Designware SPI structures
+    struct dw_spi_cfg spi_cfg[SPI_DEV];    // Array of SPI slave device structures
+    struct spi_device spi_dev[SPI_DEV];    // Array of SPI device structures
 } RP1_DEVICE_T;
 
 
