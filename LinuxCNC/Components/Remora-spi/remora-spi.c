@@ -783,14 +783,20 @@ int rt_rp1lib_init(void)
 
     inst = rp1_create_instance(chip, phys_addr, NULL);
     if (!inst)
-        return -1;
+    {
+        rtapi_print_msg(RTAPI_MSG_ERR,"rp1_create_instance failed.\n");
+        return 0;
+    }
 
     inst->phys_addr = phys_addr;
 
     // map memory
     inst->mem_fd = rtapi_open_as_root("/dev/mem", O_RDWR | O_SYNC);
     if (inst->mem_fd < 0)
-        return errno;
+    {
+        rtapi_print_msg(RTAPI_MSG_ERR,"rtapi_open_as_root failed, errno = %d\n", errno);
+        return 0;
+    }
 
     inst->priv = mmap(
         NULL,
@@ -804,7 +810,10 @@ int rt_rp1lib_init(void)
     DEBUG_PRINT("Base address: %11lx, size: %lx, mapped at address: %p\n", inst->phys_addr, RP1_BAR1_LEN, inst->priv);
 
     if (inst->priv == MAP_FAILED)
-        return errno;
+    {
+        rtapi_print_msg(RTAPI_MSG_ERR,"mmap failed, errno = %d\n", errno);
+        return 0;
+    }
 
     return 1;
 }
